@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balcony Deck Survey</title>
+<meta name="description" content="Deck geometry measured from a Gaussian splat of the balcony: 3D model, plan, section and clearances, with adjustable depth, corners and floor height.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%90%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+
+<style>
+:root{color-scheme:light dark}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --paper:#EFEDE5; --surface:#F8F7F2; --sunken:#E4E1D6;
+  --ink:#22261D; --ink-2:#4A4F41; --muted:#767A6B; --rule:#D4D1C4;
+  --deck:#1D5F6B; --deck-soft:#3E8794; --rock:#A6552C;
+  --shadow:0 1px 2px rgba(34,38,29,.07), 0 8px 24px rgba(34,38,29,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#13150E; --surface:#1C1F16; --sunken:#0D0F09;
+    --ink:#EAE9DE; --ink-2:#B6BAA9; --muted:#8E9382; --rule:#333729;
+    --deck:#6FCCDA; --deck-soft:#3E8794; --rock:#DE9160;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#13150E; --surface:#1C1F16; --sunken:#0D0F09;
+  --ink:#EAE9DE; --ink-2:#B6BAA9; --muted:#8E9382; --rule:#333729;
+  --deck:#6FCCDA; --deck-soft:#3E8794; --rock:#DE9160;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Serif",Georgia,serif; font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px; margin:0 auto; padding:32px 24px 72px; display:flex; flex-direction:column; gap:34px}
+h1,h2,h3,.lab{font-family:"IBM Plex Sans Condensed",'Helvetica Neue',Arial,sans-serif}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+
+header{display:flex; flex-direction:column; gap:10px; border-bottom:1px solid var(--rule); padding-bottom:22px}
+.eyebrow{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; font-weight:600;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
+h1{margin:0; font-size:clamp(28px,4.4vw,42px); font-weight:600; letter-spacing:-.015em; line-height:1.08; text-wrap:balance}
+header p{margin:0; max-width:63ch; color:var(--ink-2)}
+
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:1px;
+  background:var(--rule); border:1px solid var(--rule); border-radius:3px; overflow:hidden}
+.tile{background:var(--surface); padding:14px 16px; display:flex; flex-direction:column; gap:3px}
+.tile .lab{font-size:10.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
+.tile .val{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
+  font-size:25px; font-weight:500; letter-spacing:-.02em; line-height:1.15}
+.tile .val small{font-size:13px; color:var(--muted); font-weight:400; margin-left:2px}
+
+.stage{position:relative; border:1px solid var(--rule); border-radius:3px; overflow:hidden;
+  background:var(--sunken); box-shadow:var(--shadow)}
+#view{display:block; width:100%; height:min(64vh,560px); touch-action:none; cursor:grab}
+#view:active{cursor:grabbing}
+.legend{position:absolute; left:14px; bottom:12px; display:flex; flex-wrap:wrap; gap:14px;
+  font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; color:var(--ink-2);
+  background:color-mix(in srgb, var(--surface) 88%, transparent); padding:7px 11px; border-radius:2px;
+  border:1px solid var(--rule)}
+.legend span{display:flex; align-items:center; gap:6px}
+.sw{width:15px; height:3px; border-radius:1px; display:inline-block}
+.hint{position:absolute; right:14px; top:12px; font-family:"IBM Plex Sans Condensed",sans-serif;
+  font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.loading{position:absolute; inset:0; display:grid; place-items:center;
+  font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted); background:var(--sunken)}
+.loading[hidden]{display:none}
+
+.controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:22px 30px;
+  padding:20px 22px; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+.ctl{display:flex; flex-direction:column; gap:7px}
+.ctl label{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
+.ctl label b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--ink); letter-spacing:0; font-size:13px}
+input[type=range]{width:100%; accent-color:var(--deck); height:20px}
+input[type=number]{font-family:"IBM Plex Mono",monospace; font-size:14px; width:100%;
+  background:var(--paper); color:var(--ink); border:1px solid var(--rule); border-radius:2px; padding:6px 9px}
+input:focus-visible, button:focus-visible{outline:2px solid var(--deck); outline-offset:2px}
+.ctl .note{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; color:var(--muted); line-height:1.45}
+.toggles{display:flex; flex-wrap:wrap; gap:7px}
+.toggles button{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12px; font-weight:500;
+  letter-spacing:.04em; padding:6px 11px; border-radius:2px; cursor:pointer;
+  background:var(--paper); color:var(--ink-2); border:1px solid var(--rule)}
+.toggles button[aria-pressed="true"]{background:var(--deck); border-color:var(--deck); color:var(--paper)}
+.warn{grid-column:1/-1; font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12.5px;
+  color:var(--rock); border-top:1px solid var(--rule); padding-top:12px}
+
+.photos{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.shot{border:1px solid var(--rule); border-radius:3px; background:var(--surface); overflow:hidden;
+  display:flex; flex-direction:column}
+.shot img{display:block; width:100%; height:auto}
+.shot .cap{padding:9px 11px; display:flex; flex-direction:column; gap:4px}
+.shot .hdg{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--deck); font-variant-numeric:tabular-nums}
+.shot .txt{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12px; color:var(--ink-2); line-height:1.4}
+.notes{margin-top:18px; display:grid; gap:10px; font-size:13.5px; color:var(--ink-2)}
+.notes b{color:var(--ink)}
+section > h2{margin:0 0 4px; font-size:19px; font-weight:600; letter-spacing:-.005em}
+section > .sub{margin:0 0 16px; color:var(--muted); font-size:14px; max-width:63ch}
+.drawings{display:grid; grid-template-columns:1fr; gap:26px}
+@media(min-width:860px){ .drawings{grid-template-columns:1.12fr 1fr} }
+figure{margin:0; border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:14px}
+figcaption{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11px; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin-bottom:10px}
+svg{display:block; width:100%; height:auto}
+
+table{border-collapse:collapse; width:100%; font-size:14px}
+.tblwrap{overflow-x:auto; border:1px solid var(--rule); border-radius:3px}
+th,td{padding:9px 14px; text-align:right; border-bottom:1px solid var(--rule); white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11px; font-weight:600;
+  letter-spacing:.11em; text-transform:uppercase; color:var(--muted); background:var(--surface)}
+tbody tr:last-child td{border-bottom:none}
+td.n{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+
+.checks{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.check{border:1px solid var(--rule); border-left:3px solid var(--rock); border-radius:2px;
+  background:var(--surface); padding:14px 16px}
+.check h3{margin:0 0 5px; font-size:14px; font-weight:600; letter-spacing:.02em}
+.check p{margin:0; font-size:13.5px; color:var(--ink-2); line-height:1.55}
+.check .num{color:var(--ink); font-weight:500}
+footer{border-top:1px solid var(--rule); padding-top:18px; color:var(--muted); font-size:13px; max-width:70ch}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Gaussian splat survey &middot; derived geometry</div>
+  <h1>Balcony Deck Survey</h1>
+  <p>Everything below is measured from your splat, levelled to true vertical and referenced to the door threshold. The left edge follows the rock face where the ground rises to floor level; depth and both right-hand corners are yours to set.</p>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<div class="stage">
+  <canvas id="view"></canvas>
+  <div class="hint">Drag to orbit &middot; scroll to zoom</div>
+  <div class="loading" id="loading">Loading scan &hellip;</div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--deck)"></i>Deck floor</span>
+    <span><i class="sw" style="background:var(--rock)"></i>Rock line at floor level</span>
+    <span><i class="sw" style="background:#B9A87E"></i>Ground surface</span>
+    <span><i class="sw" style="background:#D8D4C2"></i>Door opening</span>
+    <span><i class="sw" style="background:var(--rock)"></i>Eye level 1.6 m</span>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="ctl">
+    <label for="depth">Deck depth<b><span id="depthv">4.00</span> m</b></label>
+    <input type="range" id="depth" min="1.5" max="6.2" step="0.05" value="4">
+    <div class="note">Measured out from the face of the wall.</div>
+  </div>
+  <div class="ctl">
+    <label for="rw">Right corner at wall<b><span id="rwv">1.50</span> m</b></label>
+    <input type="range" id="rw" min="0" max="3.3" step="0.05" value="1.5">
+    <div class="note">Right of the door centreline, at the wall. The plan dimensions this back to the right door jamb; a negative figure means the corner stops short of it.</div>
+  </div>
+  <div class="ctl">
+    <label for="rf">Right corner at front<b><span id="rfv">1.50</span> m</b></label>
+    <input type="range" id="rf" min="0" max="3.3" step="0.05" value="1.5">
+    <div class="note">Same measurement at the front edge. Set the two differently and the right side runs on a slant.</div>
+  </div>
+  <div class="ctl">
+    <label for="drop">Floor below threshold<b><span id="dropv">0.00</span> m</b></label>
+    <input type="range" id="drop" min="0" max="0.5" step="0.01" value="0">
+    <div class="note">Sink the whole floor to lose a step at the door, or to reduce the drop underneath. The rock line moves in as you go down.</div>
+  </div>
+  <div class="ctl">
+    <label for="scale">Opening, measured<b>m</b></label>
+    <input type="number" id="scale" min="0.5" max="8" step="0.01" value="3.00">
+    <div class="note">The scan reads 2.66 of its own units across the opening. Your 3&nbsp;m sets the whole survey to scale.</div>
+  </div>
+  <div class="ctl" style="grid-column:1/-1">
+    <label>Show</label>
+    <div class="toggles">
+      <button id="t-scan" aria-pressed="true">Scan &mdash; terrain &amp; rocks</button>
+      <button id="t-rail" aria-pressed="true">Railing</button>
+      <button id="t-horizon" aria-pressed="false">Horizon photos</button>
+      <button id="t-eye" aria-pressed="false">Eye level 1.6 m</button>
+      <button id="t-terrain" aria-pressed="false">Ground surface</button>
+      <button id="t-deck" aria-pressed="true">Deck</button>
+      <button id="t-grid" aria-pressed="true">1 m grid</button>
+      <button id="t-wall" aria-pressed="false">Wall plane</button>
+    </div>
+  </div>
+  <div class="ctl" id="bearing-ctl" hidden>
+    <label for="bearing">Deck faces<b><span id="bearingv">4</span>&deg; true</b></label>
+    <input type="range" id="bearing" min="-40" max="60" step="1" value="4">
+    <div class="note">Spins the photo backdrop. The default comes from matching the splat's own blurred ridge to the hill in the photos, so it is good to roughly &plusmn;10&deg;. Switch Scan on at the same time and nudge this until the photographed hill sits on the splat's grey smudge.</div>
+  </div>
+  <div class="warn" id="warn" hidden></div>
+</div>
+
+<section>
+  <h2>Drawings</h2>
+  <p class="sub">Plan looking down; section cut on the door centreline. Both redraw as you change the controls.</p>
+  <div class="drawings">
+    <figure><figcaption>Plan &mdash; floor outline &middot; wall at the bottom</figcaption><svg id="plan" viewBox="0 0 560 500"></svg></figure>
+    <figure><figcaption>Section on door centreline</figcaption><svg id="sect" viewBox="0 0 440 310"></svg></figure>
+  </div>
+</section>
+
+<section>
+  <h2>Clearance under the floor</h2>
+  <p class="sub">Drop from the finished floor down to existing ground, sampled across the deck. Distances along the wall are positive to the left.</p>
+  <div class="tblwrap"><table id="clear"></table></div>
+</section>
+
+<section>
+  <h2>Site photos</h2>
+  <p class="sub">Your five shots, each carrying a compass heading in its metadata. That is what let me place the horizon backdrop &mdash; and it fixes which way the deck faces.</p>
+  <div class="photos" id="photos"></div>
+  <div class="notes">
+    <div><b>Overhead lines.</b> Cables cross the site in four of the five shots. I cannot measure their height from a photo, but a raised deck with a 1&nbsp;m rail puts people closer to them &mdash; worth checking clearance on site before you build.</div>
+    <div><b>Shade netting.</b> Black netting is draped over the boulders on the left. Some of what the scan reads as rock surface is netting sitting a little above it.</div>
+    <div><b>The boulders are granite.</b> Large, rounded, and clearly sound &mdash; good bearing for posts, but they will need drilling and resin anchors rather than pads.</div>
+  </div>
+</section>
+
+<section>
+  <h2>Before you cut anything</h2>
+  <div class="checks">
+    <div class="check">
+      <h3>The horizon is photographic, not surveyed</h3>
+      <p>Your own shots, reprojected onto a cylinder at the bearings in their metadata, covering bearing <span class="num">&minus;21&deg;</span> to <span class="num">+101&deg;</span> and elevation <span class="num">&minus;25&deg;</span> to <span class="num">+34&deg;</span> &mdash; low enough to bring in the boulders and the sandy ground, not just the skyline. Outside that arc there are no photographs, so you get graded sky and ground. Bearing is recorded, camera pitch is not, so the vertical placement assumes the phone was level. The foreground is painted at backdrop distance, so it sits behind the surveyed rock rather than agreeing with it. Context, never a measurement.</p>
+    </div>
+    <div class="check">
+      <h3>Where it would land</h3>
+      <p>On the door centreline the ground climbs to floor level at about <span class="num">6.0&nbsp;m</span> out. Push the depth slider there and the front edge meets grade instead of standing off it.</p>
+    </div>
+    <div class="check">
+      <h3>Scale rests on one measurement</h3>
+      <p>Your <span class="num">3.00&nbsp;m</span> opening sets everything, and it corroborates: the scan then makes the frame <span class="num">2.37&ndash;2.48&nbsp;m</span> tall, right for a 3&nbsp;&times;&nbsp;2.4&nbsp;m glazed opening. If the real frame is nearer 2.1&nbsp;m tall, your 3&nbsp;m spans wider than the two uprights the scan found.</p>
+    </div>
+    <div class="check">
+      <h3>Watch the right-hand corner</h3>
+      <p>Ground falls <span class="num">2.2&nbsp;m</span> below floor level at the wall on the right. Whatever you set the right corners to, that side is a genuine drop, not a step.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Coordinates: <b>out</b> is measured from the wall face, <b>along</b> the wall is positive to the left as you step out, and floor level is the door threshold. Ground surface is the median splat height per cell with foliage filtered out; sparse cells are interpolated. The scan thins past roughly 5&nbsp;m out and behind the rock, so treat those edges as approximate.
+</footer>
+</div>
+
+<script>
+(async function(){
+"use strict";
+const grab=async u=>{
+  const r=await fetch(u);
+  if(!r.ok) throw new Error(u+' -> '+r.status);
+  return r.json();
+};
+let D,CM,LV,HZ,GAL;
+try{
+  [D,CM,LV,HZ,GAL]=await Promise.all([
+    grab('data/scene.json'), grab('data/scan.json'), grab('data/levels.json'),
+    grab('data/horizon.json'), grab('data/photos.json')]);
+}catch(err){
+  document.getElementById('loading').textContent=
+    'Could not load the survey data. Serve this folder over http rather than opening the file directly.';
+  return;
+}
+const CELL=D.cell, NS=D.ns, NT=D.nt, S0=D.s0, T0=D.t0;
+const contour = D.left_contour;                 // [[s,t],...] in scan units
+const JAMBS = D.door.jambs_t, HEAD = D.door.head_y;
+const OPENING_UNITS = 2.66;                     // jamb-to-jamb, in scan units
+
+/* every scan-derived length is multiplied by K to become metres */
+const st = {depth:4.0, rw:1.5, rf:1.5, drop:0.0, K:3.00/OPENING_UNITS,
+            rail:true, horizon:false, outBearing:4.0, RAIL_H:1.00,
+            scan:true, eye:false, terrain:false, deck:true, grid:true, wall:false};
+
+/* ---------- geometry, all in metres ---------- */
+function tOn(pts,s){
+  if(!pts||!pts.length) return 0;
+  if(s<=pts[0][0]) return pts[0][1];
+  const last=pts[pts.length-1];
+  if(s>=last[0]) return last[1];
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i], b=pts[i+1];
+    if(s>=a[0]&&s<=b[0]) return a[1]+(b[1]-a[1])*(s-a[0])/(b[0]-a[0]);
+  }
+  return last[1];
+}
+/* the rock line is a family of contours, one per floor level: dropping the
+   floor meets the rock sooner, so the usable width and depth both shrink. */
+function levelPair(){
+  const L=LV.levels, lv=Math.max(L[L.length-1], Math.min(0, -st.drop/st.K));
+  let i=0; while(i<L.length-2 && L[i+1]>lv) i++;
+  const w=(L[i]-lv)/((L[i]-L[i+1])||1);
+  return [i, Math.min(i+1,L.length-1), Math.max(0,Math.min(1,w))];
+}
+function leftU(s){
+  const [i,j,w]=levelPair();
+  return tOn(LV.contours[i],s)*(1-w)+tOn(LV.contours[j],s)*w;
+}
+const leftM = sM => st.K*leftU(sM/st.K);
+function maxDepthM(){
+  const [i,j,w]=levelPair();
+  const a=LV.contours[i], b=LV.contours[j];
+  const ea=a[a.length-1][0], eb=b[b.length-1][0];
+  return st.K*(ea*(1-w)+eb*w);
+}
+const deckY = () => -st.drop;
+function rightM(sM){                            // slanted right edge
+  const f = st.depth>1e-6 ? sM/st.depth : 0;
+  return -(st.rw + (st.rf-st.rw)*f);
+}
+function polygon(){
+  const pts=[], n=Math.max(2,Math.round(st.depth/0.2));
+  for(let i=0;i<=n;i++){ const s=st.depth*i/n; pts.push([s, leftM(s)]); }
+  pts.push([st.depth, rightM(st.depth)]);
+  pts.push([0, rightM(0)]);
+  return pts;
+}
+function area(p){ let a=0; for(let i=0;i<p.length;i++){ const j=(i+1)%p.length;
+  a+=p[i][0]*p[j][1]-p[j][0]*p[i][1]; } return Math.abs(a)/2; }
+function perim(p){ let L=0; for(let i=0;i<p.length;i++){ const j=(i+1)%p.length;
+  L+=Math.hypot(p[j][0]-p[i][0],p[j][1]-p[i][1]); } return L; }
+function groundM(sM,tM){                        // ground level in metres, null outside the grid
+  const i=Math.round((sM/st.K-S0)/CELL), j=Math.round((tM/st.K-T0)/CELL);
+  if(i<0||i>=NS||j<0||j>=NT) return null;
+  const v=D.terrain[j*NS+i];
+  return (v===null||v===undefined)? null : v*st.K;
+}
+function insideDeck(sM,tM){ return sM>=0 && sM<=st.depth && tM<=leftM(sM) && tM>=rightM(sM); }
+
+/* ---------- three.js ---------- */
+const canvas=document.getElementById('view');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(46,1,0.15,1400);
+const target=new THREE.Vector3(0.4,-0.4,2.4);
+const orbit={r:11.5, az:Math.PI/2+0.30, el:0.44};
+let saved=null;
+function place(){
+  camera.position.set(
+    target.x + orbit.r*Math.cos(orbit.el)*Math.cos(orbit.az),
+    target.y + orbit.r*Math.sin(orbit.el),
+    target.z - orbit.r*Math.cos(orbit.el)*Math.sin(orbit.az));
+  camera.lookAt(target);
+}
+scene.add(new THREE.HemisphereLight(0xf3ead6,0x555038,0.62));
+const sun=new THREE.DirectionalLight(0xfff1da,0.62); sun.position.set(-5,6,-3.5); scene.add(sun);
+const fillLight=new THREE.DirectionalLight(0xcfe0ea,0.22); fillLight.position.set(4,3,5); scene.add(fillLight);
+
+/* scan-unit content lives in a group scaled to metres */
+const world=new THREE.Group(); scene.add(world);
+function applyScale(){ world.scale.setScalar(st.K); }
+
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+/* ground mesh */
+const tGeo=new THREE.BufferGeometry();
+(function buildTerrain(){
+  const pos=[], col=[], idx=[], map=new Int32Array(NS*NT).fill(-1);
+  let c=0;
+  for(let j=0;j<NT;j++) for(let i=0;i<NS;i++){
+    const h=D.terrain[j*NS+i]; if(h===null||h===undefined) continue;
+    if(S0+i*CELL < -1e-9) continue;                 // nothing behind the wall face
+    map[j*NS+i]=c++;
+    pos.push(T0+j*CELL, h, S0+i*CELL);
+    const u=Math.max(0,Math.min(1,(h+1.9)/2.6));
+    col.push(0.45+0.34*u, 0.42+0.30*u, 0.33+0.24*u);
+  }
+  for(let j=0;j<NT-1;j++) for(let i=0;i<NS-1;i++){
+    const a=map[j*NS+i], b=map[j*NS+i+1], d=map[(j+1)*NS+i], e=map[(j+1)*NS+i+1];
+    if(a>=0&&b>=0&&d>=0) idx.push(a,d,b);
+    if(b>=0&&d>=0&&e>=0) idx.push(b,d,e);
+  }
+  tGeo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  tGeo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  tGeo.setIndex(idx); tGeo.computeVertexNormals();
+})();
+const terrain=new THREE.Mesh(tGeo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}));
+world.add(terrain);
+
+/* wall + door opening */
+const wallGrp=new THREE.Group(); world.add(wallGrp);
+const doorGrp=new THREE.Group(); world.add(doorGrp);
+(function buildWall(){
+  const w=new THREE.Mesh(new THREE.PlaneGeometry(9,3.4),
+    new THREE.MeshLambertMaterial({color:0x6d6b5c,transparent:true,opacity:0.42,side:THREE.DoubleSide}));
+  w.position.set(-0.5,1.05,-0.005); wallGrp.add(w);
+  const lm=new THREE.LineBasicMaterial({color:0xd8d4c2});
+  const L=JAMBS[0], R=JAMBS[3];
+  const g=new THREE.BufferGeometry().setFromPoints(
+    [[L,0],[L,HEAD],[R,HEAD],[R,0]].map(p=>new THREE.Vector3(p[0],p[1],0.01)));
+  doorGrp.add(new THREE.Line(g,lm));
+  [JAMBS[1],JAMBS[2]].forEach(t=>{
+    doorGrp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+      [new THREE.Vector3(t,0,0.01),new THREE.Vector3(t,HEAD,0.01)]),lm));
+  });
+})();
+
+/* scan point cloud, decoded off the main paint */
+let cloud=null, eyeGrp=null, railGrp=null, horizon=null;
+function decodePoints(bytes, meta, size, gain){
+  const n=meta.n;
+  const q=new Uint16Array(bytes.buffer,bytes.byteOffset,n*3);
+  const pos=new Float32Array(n*3), col=new Float32Array(n*3);
+  const lo=meta.lo, hi=meta.hi;
+  for(let i=0;i<n;i++){
+    for(let a=0;a<3;a++) pos[i*3+a]=lo[a]+q[i*3+a]/65535*(hi[a]-lo[a]);
+    for(let a=0;a<3;a++) col[i*3+a]=Math.min(1, bytes[n*6+i*3+a]/255*gain);
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  return new THREE.Points(g,new THREE.PointsMaterial({size,sizeAttenuation:true,vertexColors:true}));
+}
+function buildCloud(bytes){
+  cloud=decodePoints(bytes, CM, 0.032, 1.35);
+  world.add(cloud);
+  document.getElementById('loading').hidden=true;
+  applyVis();
+}
+/* 1.7 MB of quantised points, fetched rather than inlined */
+async function loadCloud(){
+  try{
+    const r=await fetch('assets/scan.bin');
+    if(!r.ok) throw new Error('scan.bin -> '+r.status);
+    buildCloud(new Uint8Array(await r.arrayBuffer()));
+  }catch(err){
+    document.getElementById('loading').textContent='Scan could not be loaded';
+  }
+}
+
+/* deck, grid, rock line — metres, so outside `world` */
+let deckMesh=null, deckEdge=null, gridLines=null, rockLine=null;
+function disposeObj(o){ if(!o) return; scene.remove(o); o.geometry.dispose(); o.material.dispose(); }
+function buildDeck(){
+  [deckMesh,deckEdge,gridLines,rockLine].forEach(disposeObj);
+  const p=polygon(), TH=0.06;
+  const shape=new THREE.Shape();
+  p.forEach((pt,i)=> i? shape.lineTo(pt[1],pt[0]) : shape.moveTo(pt[1],pt[0]));
+  const geo=new THREE.ExtrudeGeometry(shape,{depth:TH,bevelEnabled:false});
+  geo.rotateX(Math.PI/2);
+  geo.translate(0,deckY(),0);
+  deckMesh=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({
+    color:new THREE.Color(css('--deck')), transparent:true, opacity:0.8, side:THREE.DoubleSide}));
+  scene.add(deckMesh);
+
+  const DY=deckY();
+  const ring=p.map(pt=>new THREE.Vector3(pt[1],DY+0.002,pt[0]));
+  deckEdge=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ring),
+    new THREE.LineBasicMaterial({color:new THREE.Color(css('--ink'))}));
+  scene.add(deckEdge);
+
+  const rc=[];
+  for(let s=0;s<=Math.min(st.depth+0.4,maxDepthM());s+=0.1) rc.push(new THREE.Vector3(leftM(s),DY+0.03,s));
+  rockLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints(rc),
+    new THREE.LineBasicMaterial({color:new THREE.Color(css('--rock'))}));
+  scene.add(rockLine);
+
+  const gp=[];
+  for(let s=0;s<=st.depth+1e-6;s+=1) gp.push(new THREE.Vector3(rightM(s),DY+0.006,s),
+                                             new THREE.Vector3(leftM(s),DY+0.006,s));
+  for(let t=Math.ceil(-Math.max(st.rw,st.rf));t<=leftM(0)+0.5;t+=1){
+    let lo=null,hi=null;
+    for(let s=0;s<=st.depth;s+=0.04) if(t<=leftM(s)&&t>=rightM(s)){ if(lo===null)lo=s; hi=s; }
+    if(lo!==null&&hi>lo) gp.push(new THREE.Vector3(t,DY+0.006,lo),new THREE.Vector3(t,DY+0.006,hi));
+  }
+  gridLines=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(gp),
+    new THREE.LineBasicMaterial({color:new THREE.Color(css('--deck-soft')),transparent:true,opacity:0.6}));
+  scene.add(gridLines);
+  applyVis();
+}
+function buildEyeLevel(){
+  if(eyeGrp){ scene.remove(eyeGrp); eyeGrp.traverse(o=>{ if(o.geometry) o.geometry.dispose();
+    if(o.material) o.material.dispose(); }); }
+  eyeGrp=new THREE.Group();
+  const EYE=deckY()+1.60, R=22, mat=new THREE.LineBasicMaterial({
+    color:new THREE.Color(css('--rock')), transparent:true, opacity:0.85});
+  const ring=[];
+  for(let a=0;a<=96;a++){ const th=a/96*Math.PI*2; ring.push(new THREE.Vector3(Math.cos(th)*R,EYE,Math.sin(th)*R)); }
+  eyeGrp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ring),mat));
+  const cs=st.depth*0.5;
+  eyeGrp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+    [new THREE.Vector3(0,deckY(),cs),new THREE.Vector3(0,EYE,cs)]),mat));
+  const tick=[];
+  for(let a=0;a<=48;a++){ const th=a/48*Math.PI*2; tick.push(new THREE.Vector3(Math.cos(th)*0.35,EYE,cs+Math.sin(th)*0.35)); }
+  eyeGrp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(tick),mat));
+  scene.add(eyeGrp);
+}
+/* 1 m railing along the right-hand edge only */
+function buildRail(){
+  if(railGrp){ scene.remove(railGrp);
+    railGrp.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); }
+  railGrp=new THREE.Group();
+  const DY=deckY(), Hh=st.RAIL_H;
+  const a=new THREE.Vector3(rightM(0),DY,0), b=new THREE.Vector3(rightM(st.depth),DY,st.depth);
+  const L=a.distanceTo(b);
+  const mat=new THREE.MeshLambertMaterial({color:0x2f342a});
+  const n=Math.max(2,Math.round(L/1.1)+1);
+  for(let i=0;i<n;i++){
+    const q=a.clone().lerp(b,i/(n-1));
+    const post=new THREE.Mesh(new THREE.BoxGeometry(0.06,Hh,0.06),mat);
+    post.position.set(q.x,DY+Hh/2,q.z); railGrp.add(post);
+  }
+  const dir=b.clone().sub(a); const ang=Math.atan2(dir.x,dir.z);
+  [[Hh,0.05,0.09],[Hh*0.5,0.04,0.04]].forEach(([hy,tw,th])=>{
+    const bar=new THREE.Mesh(new THREE.BoxGeometry(tw,th,L),mat);
+    const mid=a.clone().lerp(b,0.5);
+    bar.position.set(mid.x,DY+hy,mid.z); bar.rotation.y=ang; railGrp.add(bar);
+  });
+  railGrp.userData.length=L;
+  scene.add(railGrp);
+}
+/* Photographic horizon. Two surfaces: a full sphere that is sky above the
+   skyline and distant ground below it, so the enclosure is closed whichever way
+   you turn or tilt, and the photographs on a cylinder at their true bearings,
+   reaching from 25 deg below the skyline to 34 deg above it. */
+function texFromUrl(url){
+  const tex=new THREE.TextureLoader().load(url);
+  tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
+  return tex;
+}
+/* a cylindrical strip between two elevations, u running across the panorama */
+function strip(R,eyeY,cz,elA,elB,vA,vB,tex,nAz){
+  const pos=[],uv=[],idx=[];
+  const b0=HZ.b0,b1=HZ.b1, NE=20;
+  for(let j=0;j<=NE;j++){
+    const t=j/NE, el=elA+(elB-elA)*t, v=vA+(vB-vA)*t;
+    const y=eyeY+R*Math.tan(THREE.MathUtils.degToRad(el));
+    for(let i=0;i<=nAz;i++){
+      const bg=b0+(b1-b0)*i/nAz;
+      const az=THREE.MathUtils.degToRad(HZ.out_bearing_default-bg);
+      pos.push(R*Math.sin(az), y, cz+R*Math.cos(az)); uv.push(i/nAz, v);
+    }
+  }
+  for(let j=0;j<NE;j++) for(let i=0;i<nAz;i++){
+    const q=j*(nAz+1)+i; idx.push(q,q+1,q+nAz+1, q+1,q+nAz+2,q+nAz+1);
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  g.setIndex(idx);
+  return new THREE.Mesh(g,new THREE.MeshBasicMaterial({
+    map:tex, side:THREE.DoubleSide, depthWrite:false}));
+}
+function buildHorizon(){
+  const bandTex=texFromUrl('assets/horizon.jpg');
+  if(!bandTex) return;
+  const R=90, EYE=1.0, CZ=2.5, DOME=420;
+  horizon=new THREE.Group();
+
+  /* a full sphere: sky above the skyline, distant ground below it, so there is
+     no plane edge to catch the eye whichever way you turn or tilt */
+  const gnd=new THREE.Color(0x5C6349), lo=new THREE.Color(0x587497), hi=new THREE.Color(0x4D6990);
+  const NA=64, NEd=40, dp=[], dc=[], di=[];
+  for(let j=0;j<=NEd;j++){
+    const el=-90+180*j/NEd, e=THREE.MathUtils.degToRad(el);
+    let c;
+    if(el<=-6) c=gnd.clone();
+    else if(el<0) c=gnd.clone().lerp(lo,(el+6)/6);
+    else c=lo.clone().lerp(hi,Math.pow(el/90,0.7));
+    for(let i=0;i<=NA;i++){
+      const az=i/NA*Math.PI*2;
+      dp.push(DOME*Math.cos(e)*Math.sin(az), DOME*Math.sin(e), CZ+DOME*Math.cos(e)*Math.cos(az));
+      dc.push(c.r,c.g,c.b);
+    }
+  }
+  for(let j=0;j<NEd;j++) for(let i=0;i<NA;i++){
+    const q=j*(NA+1)+i; di.push(q,q+1,q+NA+1, q+1,q+NA+2,q+NA+1);
+  }
+  const dg=new THREE.BufferGeometry();
+  dg.setAttribute('position',new THREE.Float32BufferAttribute(dp,3));
+  dg.setAttribute('color',new THREE.Float32BufferAttribute(dc,3));
+  dg.setIndex(di);
+  horizon.add(new THREE.Mesh(dg,new THREE.MeshBasicMaterial({
+    vertexColors:true, side:THREE.BackSide, depthWrite:false})));
+
+  // the photographs, reaching from well below the skyline up into the sky
+  horizon.add(strip(R,EYE,CZ,HZ.el0,HZ.el1,0,1,bandTex,150));
+
+  horizon.rotation.y=THREE.MathUtils.degToRad(st.outBearing-HZ.out_bearing_default);
+  scene.add(horizon);
+  applyVis();
+}
+function applyVis(){
+  terrain.visible=st.terrain; wallGrp.visible=st.wall;
+  if(cloud) cloud.visible=st.scan;
+  if(eyeGrp) eyeGrp.visible=st.eye;
+  if(railGrp) railGrp.visible=st.rail&&st.deck;
+  if(horizon) horizon.visible=st.horizon;
+  scene.background=st.horizon? new THREE.Color(0x5F7B9B) : null;
+  if(deckMesh){ deckMesh.visible=st.deck; deckEdge.visible=st.deck; }
+  if(gridLines) gridLines.visible=st.grid&&st.deck;
+}
+function resize(){
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(!w||!h) return;
+  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+function frame(){ resize(); place(); renderer.render(scene,camera); requestAnimationFrame(frame); }
+
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove',e=>{ if(!drag) return;
+  orbit.az-=(e.clientX-drag.x)*0.007;
+  orbit.el=Math.max(-0.15,Math.min(1.45, orbit.el+(e.clientY-drag.y)*0.006));
+  drag={x:e.clientX,y:e.clientY};});
+['pointerup','pointercancel'].forEach(t=>canvas.addEventListener(t,()=>drag=null));
+canvas.addEventListener('wheel',e=>{e.preventDefault();
+  orbit.r=Math.max(3.5,Math.min(26,orbit.r*(1+Math.sign(e.deltaY)*0.09)));},{passive:false});
+
+/* ---------- readouts ---------- */
+const f=(v,d=2)=>(Math.abs(v)<5e-3?0:v).toFixed(d);   // no -0.00
+function maxDrop(){
+  let m=0;
+  for(let s=0;s<=st.depth+1e-6;s+=0.15)
+    for(let t=rightM(s);t<=leftM(s);t+=0.15){
+      const g=groundM(s,t); if(g!==null&&deckY()-g>m) m=deckY()-g;
+    }
+  return m;
+}
+function refresh(){
+  const p=polygon();
+  const wWall=leftM(0)-rightM(0), wFront=leftM(st.depth)-rightM(st.depth);
+  document.getElementById('tiles').innerHTML=[
+    ['Floor area', f(area(p),1),'m²'],
+    ['Depth from wall', f(st.depth,2),'m'],
+    ['Width at the wall', f(wWall,2),'m'],
+    ['Width at the front', f(wFront,2),'m'],
+    ['Edge to trim', f(perim(p),1),'m'],
+    ['Max drop to ground', f(maxDrop(),2),'m'],
+    ['Jamb to right corner', f(st.rw-Math.abs(JAMBS[3]*st.K),2),'m'],
+    ['Rock to left jamb', f(leftM(0)-JAMBS[0]*st.K,2),'m'],
+    ['Step down at door', f(st.drop,2),'m'],
+    ['Railing length', f(Math.hypot(rightM(st.depth)-rightM(0),st.depth),2),'m']
+  ].map(t=>`<div class="tile"><span class="lab">${t[0]}</span><span class="val">${t[1]}<small>${t[2]}</small></span></div>`).join('');
+  document.getElementById('depthv').textContent=f(st.depth);
+  document.getElementById('rwv').textContent=f(st.rw);
+  document.getElementById('rfv').textContent=f(st.rf);
+  document.getElementById('dropv').textContent=f(st.drop);
+
+  const w=document.getElementById('warn');
+  const msgs=[];
+  if(wFront<0.6) msgs.push('At this depth the rock has closed in to within '+f(wFront)+' m of the right edge — the floor runs out of room.');
+  if(st.depth>maxDepthM()-0.06) msgs.push('At this floor level the scan stops covering the rock face past '+f(maxDepthM(),1)+' m, so the depth is capped there.');
+  if(st.drop>0.2) msgs.push('A '+f(st.drop)+' m step down from the threshold needs a step or a landing at the door.');
+  w.hidden=msgs.length===0; w.textContent=msgs.join(' ');
+
+  drawPlan(p); drawSect(); drawTable();
+}
+
+/* plan: looking down with the way you face when you step out running up the
+   sheet, so the wall is along the bottom and your left is on the left. */
+function drawPlan(p){
+  const svg=document.getElementById('plan');
+  const tmax=Math.max(...p.map(q=>q[1])), tmin=Math.min(...p.map(q=>q[1]));
+  const span=Math.max(tmax-tmin,0.6);
+  const sc=Math.min(410/span, 342/Math.max(st.depth,0.6));
+  const X=t=>72+(tmax-t)*sc, Y=s=>404-s*sc;
+  const o=[], W0=Y(0), xl=X(tmax), xr=X(tmin);
+  // rock face, on the left
+  const rc=[]; for(let s=0;s<=Math.min(st.depth+0.6,maxDepthM());s+=0.1) rc.push([s,leftM(s)]);
+  o.push(`<path d="${rc.map((c,i)=>(i?'L':'M')+X(c[1]).toFixed(1)+' '+Y(c[0]).toFixed(1)).join(' ')}"
+    fill="none" stroke="var(--rock)" stroke-width="2.4" stroke-dasharray="7 4"/>`);
+  const mid=rc[Math.floor(rc.length*0.5)];
+  o.push(`<text x="${X(mid[1])-10}" y="${Y(mid[0])}" text-anchor="end" fill="var(--rock)"
+    font-family="IBM Plex Sans Condensed" font-size="12">rock face</text>`);
+  // floor
+  o.push(`<path d="${p.map((q,i)=>(i?'L':'M')+X(q[1]).toFixed(1)+' '+Y(q[0]).toFixed(1)).join(' ')} Z"
+    fill="var(--deck)" fill-opacity="0.16" stroke="var(--deck)" stroke-width="2.2"/>`);
+  // wall along the bottom
+  o.push(`<line x1="${xl-16}" y1="${W0}" x2="${xr+16}" y2="${W0}" stroke="var(--ink)" stroke-width="3.5"/>`);
+  o.push(`<text x="${xl-16}" y="${W0+17}" fill="var(--ink-2)"
+    font-family="IBM Plex Sans Condensed" font-size="12">wall</text>`);
+  const jl=JAMBS[0]*st.K, jr=JAMBS[3]*st.K;
+  o.push(`<line x1="${X(jl)}" y1="${W0}" x2="${X(jr)}" y2="${W0}" stroke="var(--surface)" stroke-width="5"/>`);
+  o.push(`<line x1="${X(jl)}" y1="${W0}" x2="${X(jr)}" y2="${W0}" stroke="var(--deck)" stroke-width="2.5" stroke-dasharray="3 3"/>`);
+  o.push(`<text x="${X((jl+jr)/2)}" y="${W0+17}" fill="var(--deck)" font-family="IBM Plex Sans Condensed"
+    font-size="12" text-anchor="middle">opening ${f(OPENING_UNITS*st.K)} m</text>`);
+  // depth dimension up the right edge, text turned
+  const dx=xr+36, my=(W0+Y(st.depth))/2;
+  o.push(`<line x1="${dx}" y1="${W0}" x2="${dx}" y2="${Y(st.depth)}" stroke="var(--ink-2)" stroke-width="1"/>`);
+  [0,st.depth].forEach(s=>o.push(`<line x1="${dx-5}" y1="${Y(s)}" x2="${dx+5}" y2="${Y(s)}" stroke="var(--ink-2)" stroke-width="1"/>`));
+  o.push(`<text x="${dx+8}" y="${my}" transform="rotate(-90 ${dx+8} ${my})" text-anchor="middle"
+    fill="var(--ink)" font-family="IBM Plex Mono" font-size="12.5">${f(st.depth)} m</text>`);
+  // widths: at the wall below the line, at the front above it
+  [[0,46],[st.depth,-32]].forEach(([s,off])=>{
+    const yy=Y(s)+off, a=X(leftM(s)), b=X(rightM(s));
+    o.push(`<line x1="${a}" y1="${yy}" x2="${b}" y2="${yy}" stroke="var(--ink-2)" stroke-width="1"/>`);
+    [a,b].forEach(x=>o.push(`<line x1="${x}" y1="${yy-5}" x2="${x}" y2="${yy+5}" stroke="var(--ink-2)" stroke-width="1"/>`));
+    o.push(`<text x="${(a+b)/2}" y="${yy-8}" text-anchor="middle" fill="var(--ink)"
+      font-family="IBM Plex Mono" font-size="12.5">${f(leftM(s)-rightM(s))} m</text>`);
+  });
+  // rock face to the left jamb, inside the floor just above the wall line
+  const gapL=leftM(0)-jl;
+  if(Math.abs(gapL)>0.04){
+    const yy=W0-26, a=X(leftM(0)), b=X(jl);
+    o.push(`<line x1="${a}" y1="${yy}" x2="${b}" y2="${yy}" stroke="var(--ink-2)" stroke-width="1"/>`);
+    [a,b].forEach(x=>o.push(`<line x1="${x}" y1="${yy-5}" x2="${x}" y2="${yy+5}" stroke="var(--ink-2)" stroke-width="1"/>`));
+    [a,b].forEach(x=>o.push(`<line x1="${x}" y1="${W0}" x2="${x}" y2="${yy}" stroke="var(--ink-2)" stroke-width="0.7" stroke-dasharray="2 3"/>`));
+    o.push(`<text x="${(a+b)/2}" y="${yy-8}" text-anchor="middle" fill="var(--ink)"
+      font-family="IBM Plex Mono" font-size="12">${f(Math.abs(gapL))} m</text>`);
+  }
+  // jamb to right corner, drawn inside the floor just above the wall line
+  const gap=st.rw-Math.abs(jr);
+  if(Math.abs(gap)>0.04){
+    const yy=W0-26, a=X(jr), b=X(rightM(0));
+    o.push(`<line x1="${a}" y1="${yy}" x2="${b}" y2="${yy}" stroke="var(--ink-2)" stroke-width="1"/>`);
+    [a,b].forEach(x=>o.push(`<line x1="${x}" y1="${yy-5}" x2="${x}" y2="${yy+5}" stroke="var(--ink-2)" stroke-width="1"/>`));
+    [a,b].forEach(x=>o.push(`<line x1="${x}" y1="${W0}" x2="${x}" y2="${yy}" stroke="var(--ink-2)" stroke-width="0.7" stroke-dasharray="2 3"/>`));
+    o.push(`<text x="${(a+b)/2}" y="${yy-8}" text-anchor="middle" fill="var(--ink)"
+      font-family="IBM Plex Mono" font-size="12">${f(Math.abs(gap))} m${gap<0?' in':''}</text>`);
+  }else{
+    o.push(`<text x="${(X(jr)+X(rightM(0)))/2}" y="${W0-13}" text-anchor="middle" fill="var(--muted)"
+      font-family="IBM Plex Sans Condensed" font-size="11.5">corner flush with jamb</text>`);
+  }
+  // railing on the right edge only
+  if(st.rail){
+    const a=[X(rightM(0)),Y(0)], b=[X(rightM(st.depth)),Y(st.depth)];
+    o.push(`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"
+      stroke="var(--ink)" stroke-width="4.5" stroke-linecap="round"/>`);
+    const nP=Math.max(2,Math.round(Math.hypot(rightM(st.depth)-rightM(0),st.depth)/1.1)+1);
+    for(let i=0;i<nP;i++){
+      const x=a[0]+(b[0]-a[0])*i/(nP-1), y=a[1]+(b[1]-a[1])*i/(nP-1);
+      o.push(`<circle cx="${x}" cy="${y}" r="2.6" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.4"/>`);
+    }
+    o.push(`<text x="${(a[0]+b[0])/2+12}" y="${(a[1]+b[1])/2}" fill="var(--ink-2)"
+      font-family="IBM Plex Sans Condensed" font-size="11.5">1.0 m rail</text>`);
+  }
+  // the two adjustable corners
+  [[0,rightM(0)],[st.depth,rightM(st.depth)]].forEach(([s,t])=>{
+    o.push(`<circle cx="${X(t)}" cy="${Y(s)}" r="4.5" fill="var(--paper)" stroke="var(--deck)" stroke-width="2.2"/>`);
+  });
+  o.push(`<text x="14" y="490" fill="var(--muted)" font-family="IBM Plex Sans Condensed" font-size="11.5" letter-spacing="1.4">&#8592; LEFT</text>`);
+  o.push(`<text x="546" y="490" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Sans Condensed" font-size="11.5" letter-spacing="1.4">RIGHT &#8594;</text>`);
+  svg.innerHTML=o.join('');
+}
+
+/* section */
+function drawSect(){
+  const svg=document.getElementById('sect');
+  const SMAX=7.2, X=s=>44+s*50, Y=y=>160-y*42;
+  const o=[], gp=[];
+  for(let s=0;s<=SMAX;s+=0.12){ const g=groundM(s,0); if(g!==null) gp.push([s,g]); }
+  if(gp.length>1){
+    o.push(`<path d="${gp.map((q,i)=>(i?'L':'M')+X(q[0]).toFixed(1)+' '+Y(q[1]).toFixed(1)).join(' ')}
+      L ${X(gp[gp.length-1][0])} ${Y(-3.0)} L ${X(gp[0][0])} ${Y(-3.0)} Z"
+      fill="#b9a87e" fill-opacity="0.34" stroke="#a2916a" stroke-width="1.8"/>`);
+  }
+  o.push(`<rect x="${X(-1.6)}" y="${Y(3.1)}" width="${X(0)-X(-1.6)}" height="${Y(-3.0)-Y(3.1)}" fill="var(--ink)" fill-opacity="0.1"/>`);
+  o.push(`<line x1="${X(0)}" y1="${Y(3.1)}" x2="${X(0)}" y2="${Y(-3.0)}" stroke="var(--ink)" stroke-width="2"/>`);
+  o.push(`<line x1="${X(-0.12)}" y1="${Y(HEAD*st.K)}" x2="${X(0.12)}" y2="${Y(HEAD*st.K)}" stroke="var(--ink)" stroke-width="2"/>`);
+  o.push(`<text x="${X(-1.5)}" y="${Y(1.3)}" fill="var(--ink-2)" font-family="IBM Plex Sans Condensed" font-size="12">room</text>`);
+  const DY=deckY();
+  o.push(`<line x1="${X(-1.6)}" y1="${Y(0)}" x2="${X(SMAX)}" y2="${Y(0)}" stroke="var(--ink-2)" stroke-width="0.8" stroke-dasharray="2 4"/>`);
+  o.push(`<text x="${X(SMAX)}" y="${Y(0)-6}" text-anchor="end" fill="var(--muted)"
+    font-family="IBM Plex Sans Condensed" font-size="11">threshold</text>`);
+  o.push(`<line x1="${X(-1.6)}" y1="${Y(DY)}" x2="${X(SMAX)}" y2="${Y(DY)}" stroke="var(--deck)" stroke-width="0.8" stroke-dasharray="4 4"/>`);
+  o.push(`<rect x="${X(0)}" y="${Y(DY)}" width="${X(st.depth)-X(0)}" height="5" fill="var(--deck)"/>`);
+  o.push(`<text x="${X(st.depth/2)}" y="${Y(DY)-11}" text-anchor="middle" fill="var(--deck)"
+    font-family="IBM Plex Sans Condensed" font-size="12">deck floor${st.drop>0.005?' &mdash; '+f(st.drop)+' m below threshold':' &mdash; level with threshold'}</text>`);
+  if(st.drop>0.005){
+    o.push(`<line x1="${X(-0.28)}" y1="${Y(0)}" x2="${X(-0.28)}" y2="${Y(DY)}" stroke="var(--rock)" stroke-width="1.4"/>`);
+    [0,DY].forEach(v=>o.push(`<line x1="${X(-0.42)}" y1="${Y(v)}" x2="${X(-0.14)}" y2="${Y(v)}" stroke="var(--rock)" stroke-width="1.4"/>`));
+  }
+  for(let s=1;s<=Math.floor(st.depth);s++){
+    const g=groundM(s,0); if(g===null) continue;
+    o.push(`<line x1="${X(s)}" y1="${Y(DY)}" x2="${X(s)}" y2="${Y(g)}" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="3 3"/>`);
+    o.push(`<text x="${X(s)}" y="${Y(g)+15}" text-anchor="middle" fill="var(--ink)" font-family="IBM Plex Mono" font-size="11.5">${f(DY-g)}</text>`);
+  }
+  o.push(`<text x="${X(SMAX)}" y="${Y(2.2)}" text-anchor="end" fill="var(--muted)"
+    font-family="IBM Plex Sans Condensed" font-size="11">figures = drop from floor to ground, m</text>`);
+  svg.innerHTML=o.join('');
+}
+
+/* clearance table */
+function drawTable(){
+  const ts=[-2.0,-1.5,-1.0,-0.5,0,0.5,1.0,1.5,2.0,2.5,3.0];
+  const step=st.depth/6;
+  const ss=[]; for(let i=1;i<=6;i++) ss.push(+(step*i).toFixed(2));
+  let h='<thead><tr><th>Out from wall</th>'+ts.map(t=>`<th>${t>0?'+':''}${t.toFixed(1)} m</th>`).join('')+'</tr></thead><tbody>';
+  ss.forEach(s=>{
+    h+=`<tr><td class="n">${f(s)} m</td>`;
+    ts.forEach(t=>{
+      const g=insideDeck(s,t)? groundM(s,t) : null;
+      h+=`<td class="n">${g===null?'<span style="color:var(--muted)">—</span>':f(deckY()-g)}</td>`;
+    });
+    h+='</tr>';
+  });
+  document.getElementById('clear').innerHTML=h+'</tbody>';
+}
+
+/* ---------- site photos ---------- */
+(function(){
+  const shots=GAL||[];
+  const rel=hd=>{
+    let a=st.outBearing-hd; while(a<-180)a+=360; while(a>180)a-=360;
+    if(Math.abs(a)<6) return 'straight out from the door';
+    return Math.abs(a).toFixed(0)+'\u00B0 to the '+(a>0?'left':'right');
+  };
+  document.getElementById('photos').innerHTML=shots.map(s=>
+    `<figure class="shot"><img src="${s.file}" alt="Site photo facing ${s.heading.toFixed(0)} degrees"
+      loading="lazy"><div class="cap">
+      <span class="hdg">${s.heading.toFixed(0)}&deg; true &middot; ${s.f35} mm &middot; ${rel(s.heading)}</span>
+      <span class="txt">${s.note}</span></div></figure>`).join('');
+})();
+
+/* ---------- wiring ---------- */
+function rebuild(){ applyScale(); buildDeck(); buildRail(); buildEyeLevel(); applyVis(); refresh(); }
+document.getElementById('depth').addEventListener('input',e=>{st.depth=+e.target.value; rebuild();});
+document.getElementById('rw').addEventListener('input',e=>{st.rw=+e.target.value; rebuild();});
+document.getElementById('rf').addEventListener('input',e=>{st.rf=+e.target.value; rebuild();});
+document.getElementById('drop').addEventListener('input',e=>{
+  st.drop=+e.target.value; clampDepth(); rebuild();});
+function clampDepth(){
+  const dmax=+(maxDepthM()-0.05).toFixed(2);
+  const ds=document.getElementById('depth'); ds.max=dmax;
+  if(st.depth>dmax){ st.depth=dmax; ds.value=dmax; }
+}
+document.getElementById('scale').addEventListener('input',e=>{
+  const v=+e.target.value;
+  st.K=(v>0.4&&v<9)? v/OPENING_UNITS : 1;
+  clampDepth(); rebuild();
+});
+[['t-scan','scan'],['t-rail','rail'],['t-horizon','horizon'],['t-eye','eye'],
+ ['t-terrain','terrain'],['t-deck','deck'],['t-grid','grid'],['t-wall','wall']].forEach(([id,key])=>{
+  const b=document.getElementById(id);
+  b.addEventListener('click',()=>{
+    st[key]=!st[key]; b.setAttribute('aria-pressed',String(st[key]));
+    if(key==='horizon'){
+      document.getElementById('bearing-ctl').hidden=!st.horizon;
+      if(st.horizon && !horizon) buildHorizon();
+      if(st.horizon){                       // stand on the deck and look out
+        saved={r:orbit.r, el:orbit.el, ty:target.y};
+        orbit.r=7.0; orbit.el=0.05; target.y=deckY()+1.0;
+      }else if(saved){
+        orbit.r=saved.r; orbit.el=saved.el; target.y=saved.ty; saved=null;
+      }
+    }
+    if(key==='rail'){ buildDeck(); refresh(); }
+    applyVis();
+  });
+});
+document.getElementById('bearing').addEventListener('input',e=>{
+  st.outBearing=+e.target.value;
+  document.getElementById('bearingv').textContent=st.outBearing;
+  if(horizon) horizon.rotation.y=THREE.MathUtils.degToRad(st.outBearing-HZ.out_bearing_default);
+});
+clampDepth();
+rebuild(); frame();
+loadCloud();
+})();
+</script>
+</body>
+</html>
