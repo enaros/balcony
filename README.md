@@ -45,7 +45,8 @@ faster. If the web uploader drops it, nothing breaks.
 |---|---|
 | `index.html` | The whole page: markup, styles, and all the geometry code |
 | `assets/scan.bin` | 187,639 splat points, quantised — position 3×uint16, colour 3×uint8 |
-| `assets/horizon.jpg` | The site photos reprojected into one cylindrical panorama, 122° wide by 59° tall |
+| `assets/horizon.jpg` | The site photos reprojected into one 122° cylindrical panorama |
+| `assets/skirt.jpg` | Colour ramp that carries the panorama down to the ground |
 | `assets/photo-p*.jpg` | The five site photos, for the gallery |
 | `data/scene.json` | Terrain heightmap on a 12.5 cm grid, plus the door geometry |
 | `data/levels.json` | Rock-face contour at 16 floor levels, for the height slider |

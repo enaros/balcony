@@ -234,7 +234,7 @@ footer{border-top:1px solid var(--rule); padding-top:18px; color:var(--muted); f
   <div class="checks">
     <div class="check">
       <h3>The horizon is photographic, not surveyed</h3>
-      <p>Your own shots, reprojected onto a cylinder at the bearings in their metadata, covering bearing <span class="num">&minus;21&deg;</span> to <span class="num">+101&deg;</span> and elevation <span class="num">&minus;25&deg;</span> to <span class="num">+34&deg;</span> &mdash; low enough to bring in the boulders and the sandy ground, not just the skyline. Outside that arc there are no photographs, so you get graded sky and ground. Bearing is recorded, camera pitch is not, so the vertical placement assumes the phone was level. The foreground is painted at backdrop distance, so it sits behind the surveyed rock rather than agreeing with it. Context, never a measurement.</p>
+      <p>Your own shots, reprojected onto a cylinder at the bearings in their metadata. They cover bearing <span class="num">&minus;21&deg;</span> to <span class="num">+101&deg;</span>; outside that arc there are no photographs, so you get graded sky and distant ground. Bearing is recorded, camera pitch is not, so the vertical placement assumes the phone was level. Context, never a measurement.</p>
     </div>
     <div class="check">
       <h3>Where it would land</h3>
@@ -522,10 +522,9 @@ function buildRail(){
   railGrp.userData.length=L;
   scene.add(railGrp);
 }
-/* Photographic horizon. Two surfaces: a full sphere that is sky above the
-   skyline and distant ground below it, so the enclosure is closed whichever way
-   you turn or tilt, and the photographs on a cylinder at their true bearings,
-   reaching from 25 deg below the skyline to 34 deg above it. */
+/* Photographic horizon. Four surfaces, so the enclosure is closed from every
+   angle: a graded sky dome, the photo band at its true bearings, a skirt that
+   carries each azimuth's own colour down from the band, and distant ground. */
 function texFromUrl(url){
   const tex=new THREE.TextureLoader().load(url);
   tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
@@ -534,7 +533,7 @@ function texFromUrl(url){
 /* a cylindrical strip between two elevations, u running across the panorama */
 function strip(R,eyeY,cz,elA,elB,vA,vB,tex,nAz){
   const pos=[],uv=[],idx=[];
-  const b0=HZ.b0,b1=HZ.b1, NE=20;
+  const b0=HZ.b0,b1=HZ.b1, NE=6;
   for(let j=0;j<=NE;j++){
     const t=j/NE, el=elA+(elB-elA)*t, v=vA+(vB-vA)*t;
     const y=eyeY+R*Math.tan(THREE.MathUtils.degToRad(el));
@@ -557,22 +556,19 @@ function strip(R,eyeY,cz,elA,elB,vA,vB,tex,nAz){
 function buildHorizon(){
   const bandTex=texFromUrl('assets/horizon.jpg');
   if(!bandTex) return;
-  const R=90, EYE=1.0, CZ=2.5, DOME=420;
+  const skirtTex=texFromUrl('assets/skirt.jpg');
+  const R=90, EYE=1.0, CZ=2.5, DOME=420, GND=0x5C6349;
   horizon=new THREE.Group();
 
-  /* a full sphere: sky above the skyline, distant ground below it, so there is
-     no plane edge to catch the eye whichever way you turn or tilt */
-  const gnd=new THREE.Color(0x5C6349), lo=new THREE.Color(0x587497), hi=new THREE.Color(0x4D6990);
-  const NA=64, NEd=40, dp=[], dc=[], di=[];
+  // sky dome, graded from the panorama's own sky tones
+  const lo=new THREE.Color(0x5F7B9B), hi=new THREE.Color(0x4D6990);
+  const NA=48, NEd=14, dp=[], dc=[], di=[];
   for(let j=0;j<=NEd;j++){
-    const el=-90+180*j/NEd, e=THREE.MathUtils.degToRad(el);
-    let c;
-    if(el<=-6) c=gnd.clone();
-    else if(el<0) c=gnd.clone().lerp(lo,(el+6)/6);
-    else c=lo.clone().lerp(hi,Math.pow(el/90,0.7));
+    const t=j/NEd, el=THREE.MathUtils.degToRad(-6+96*t);
+    const c=lo.clone().lerp(hi,Math.pow(t,0.7));
     for(let i=0;i<=NA;i++){
       const az=i/NA*Math.PI*2;
-      dp.push(DOME*Math.cos(e)*Math.sin(az), DOME*Math.sin(e), CZ+DOME*Math.cos(e)*Math.cos(az));
+      dp.push(DOME*Math.cos(el)*Math.sin(az), DOME*Math.sin(el), CZ+DOME*Math.cos(el)*Math.cos(az));
       dc.push(c.r,c.g,c.b);
     }
   }
@@ -586,8 +582,15 @@ function buildHorizon(){
   horizon.add(new THREE.Mesh(dg,new THREE.MeshBasicMaterial({
     vertexColors:true, side:THREE.BackSide, depthWrite:false})));
 
-  // the photographs, reaching from well below the skyline up into the sky
+  // distant ground, capping everything below
+  const disc=new THREE.Mesh(new THREE.CircleGeometry(DOME,72),
+    new THREE.MeshBasicMaterial({color:GND, side:THREE.DoubleSide, depthWrite:false}));
+  disc.rotation.x=-Math.PI/2; disc.position.set(0,-3.4,CZ);
+  horizon.add(disc);
+
+  // the photographs, then the skirt that carries them down to the ground
   horizon.add(strip(R,EYE,CZ,HZ.el0,HZ.el1,0,1,bandTex,150));
+  if(skirtTex) horizon.add(strip(R,EYE,CZ,-4.5,HZ.el0,0,1,skirtTex,150));
 
   horizon.rotation.y=THREE.MathUtils.degToRad(st.outBearing-HZ.out_bearing_default);
   scene.add(horizon);
