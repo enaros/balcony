@@ -1,0 +1,58 @@
+[
+ {
+  "name": "JioHome DEP-3Q",
+  "w": 10.5,
+  "len": 2.4,
+  "price": 398,
+  "star": "Excellent value",
+  "star_th": "คุ้มค่ามาก",
+  "note": ""
+ },
+ {
+  "name": "JioHome DEP-4Q",
+  "w": 14.0,
+  "len": 2.4,
+  "price": 456,
+  "star": "Best value",
+  "star_th": "คุ้มค่าที่สุด",
+  "note": ""
+ },
+ {
+  "name": "KASSA Grooved",
+  "w": 14.6,
+  "len": 2.4,
+  "price": 339,
+  "star": "Cheapest found",
+  "star_th": "ถูกที่สุดที่พบ",
+  "note": "",
+  "url": "https://www.thaiwatsadu.com/en/product/%E0%B9%84%E0%B8%A1%E0%B9%89%E0%B8%9E%E0%B8%B7%E0%B9%89%E0%B8%99-WPC-KASSA-%E0%B8%A3%E0%B8%B8%E0%B9%88%E0%B8%99-%E0%B8%A5%E0%B8%B2%E0%B8%A2%E0%B8%A3%E0%B9%88%E0%B8%AD%E0%B8%87-%E0%B8%A5%E0%B8%B2%E0%B8%A2%E0%B9%84%E0%B8%A1%E0%B9%89-%E0%B8%82%E0%B8%99%E0%B8%B2%E0%B8%94-146-x-240-x-24-%E0%B8%8B%E0%B8%A1-%E0%B8%AA%E0%B8%B5%E0%B8%8B%E0%B8%B4%E0%B8%99%E0%B8%99%E0%B8%B2%E0%B8%A1%E0%B8%AD%E0%B8%99-60437418",
+  "highlight": true
+ },
+ {
+  "name": "KASSA Grooved (teak)",
+  "w": 14.6,
+  "len": 2.4,
+  "price": 378,
+  "star": "",
+  "note": "Same size, different finish",
+  "note_th": "ขนาดเดียวกัน ผิวต่างกัน"
+ },
+ {
+  "name": "NEXGEN WOOD Hollow",
+  "w": 15.2,
+  "len": 2.4,
+  "price": 429,
+  "star": "",
+  "note": "Wider board",
+  "note_th": "ไม้กว้างกว่า"
+ },
+ {
+  "name": "KASSA Luxury 3D",
+  "w": 14.5,
+  "len": 2.4,
+  "price": 518,
+  "star": "",
+  "note": "More premium surface",
+  "note_th": "ผิวพรีเมียมกว่า"
+ }
+]

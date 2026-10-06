@@ -7,7 +7,7 @@
 <meta name="description" content="Deck geometry measured from a Gaussian splat of the balcony: 3D model, plan, section and clearances, with adjustable depth, corners and floor height.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%90%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
 
 <style>
 :root{color-scheme:light dark}
@@ -41,14 +41,21 @@ img{max-width:100%}
 }
 *{box-sizing:border-box}
 body{background:var(--paper); color:var(--ink);
-  font-family:"IBM Plex Serif",Georgia,serif; font-size:15px; line-height:1.6;
+  font-family:"IBM Plex Serif","IBM Plex Sans Thai",Georgia,serif; font-size:15px; line-height:1.6;
   -webkit-font-smoothing:antialiased;}
 .wrap{max-width:1180px; margin:0 auto; padding:32px 24px 72px; display:flex; flex-direction:column; gap:34px}
-h1,h2,h3,.lab{font-family:"IBM Plex Sans Condensed",'Helvetica Neue',Arial,sans-serif}
+h1,h2,h3,.lab{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",'Helvetica Neue',Arial,sans-serif}
 .num{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
 
 header{display:flex; flex-direction:column; gap:10px; border-bottom:1px solid var(--rule); padding-bottom:22px}
-.eyebrow{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; font-weight:600;
+.topline{display:flex; justify-content:space-between; align-items:center; gap:12px}
+.lang{display:flex; flex-shrink:0; border:1px solid var(--rule); border-radius:2px; overflow:hidden}
+.lang a{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:12px; font-weight:500;
+  padding:4px 10px; color:var(--ink-2); text-decoration:none; background:var(--surface)}
+.lang a+a{border-left:1px solid var(--rule)}
+.lang a[aria-current="true"]{background:var(--deck); color:var(--paper)}
+html[lang="th"] :is(.eyebrow,.lab,.hint,.loading,.ctl label,.costbar label,figcaption,thead th,.badge){letter-spacing:0}
+.eyebrow{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:11.5px; font-weight:600;
   letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
 h1{margin:0; font-size:clamp(28px,4.4vw,42px); font-weight:600; letter-spacing:-.015em; line-height:1.08; text-wrap:balance}
 header p{margin:0; max-width:63ch; color:var(--ink-2)}
@@ -66,35 +73,35 @@ header p{margin:0; max-width:63ch; color:var(--ink-2)}
 #view{display:block; width:100%; height:min(64vh,560px); touch-action:none; cursor:grab}
 #view:active{cursor:grabbing}
 .legend{position:absolute; left:14px; bottom:12px; display:flex; flex-wrap:wrap; gap:14px;
-  font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; color:var(--ink-2);
+  font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:11.5px; color:var(--ink-2);
   background:color-mix(in srgb, var(--surface) 88%, transparent); padding:7px 11px; border-radius:2px;
   border:1px solid var(--rule)}
 .legend span{display:flex; align-items:center; gap:6px}
 .sw{width:15px; height:3px; border-radius:1px; display:inline-block}
-.hint{position:absolute; right:14px; top:12px; font-family:"IBM Plex Sans Condensed",sans-serif;
+.hint{position:absolute; right:14px; top:12px; font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif;
   font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
 .loading{position:absolute; inset:0; display:grid; place-items:center;
-  font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12px; letter-spacing:.1em;
+  font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:12px; letter-spacing:.1em;
   text-transform:uppercase; color:var(--muted); background:var(--sunken)}
 .loading[hidden]{display:none}
 
 .controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:22px 30px;
   padding:20px 22px; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
 .ctl{display:flex; flex-direction:column; gap:7px}
-.ctl label{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; font-weight:600;
+.ctl label{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:11.5px; font-weight:600;
   letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; gap:10px}
 .ctl label b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--ink); letter-spacing:0; font-size:13px}
 input[type=range]{width:100%; accent-color:var(--deck); height:20px}
 input[type=number]{font-family:"IBM Plex Mono",monospace; font-size:14px; width:100%;
   background:var(--paper); color:var(--ink); border:1px solid var(--rule); border-radius:2px; padding:6px 9px}
 input:focus-visible, button:focus-visible{outline:2px solid var(--deck); outline-offset:2px}
-.ctl .note{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11.5px; color:var(--muted); line-height:1.45}
+.ctl .note{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:11.5px; color:var(--muted); line-height:1.45}
 .toggles{display:flex; flex-wrap:wrap; gap:7px}
-.toggles button{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12px; font-weight:500;
+.toggles button{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:12px; font-weight:500;
   letter-spacing:.04em; padding:6px 11px; border-radius:2px; cursor:pointer;
   background:var(--paper); color:var(--ink-2); border:1px solid var(--rule)}
 .toggles button[aria-pressed="true"]{background:var(--deck); border-color:var(--deck); color:var(--paper)}
-.warn{grid-column:1/-1; font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12.5px;
+.warn{grid-column:1/-1; font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:12.5px;
   color:var(--rock); border-top:1px solid var(--rule); padding-top:12px}
 
 .photos{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
@@ -103,23 +110,41 @@ input:focus-visible, button:focus-visible{outline:2px solid var(--deck); outline
 .shot img{display:block; width:100%; height:auto}
 .shot .cap{padding:9px 11px; display:flex; flex-direction:column; gap:4px}
 .shot .hdg{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--deck); font-variant-numeric:tabular-nums}
-.shot .txt{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:12px; color:var(--ink-2); line-height:1.4}
-.notes{margin-top:18px; display:grid; gap:10px; font-size:13.5px; color:var(--ink-2)}
-.notes b{color:var(--ink)}
+.shot .txt{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:12px; color:var(--ink-2); line-height:1.4}
+.costbar{display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:14px;
+  padding:12px 16px; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
+.costbar .fig{display:flex; flex-direction:column; gap:2px}
+.costbar .fig .lab{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:10.5px; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--muted)}
+.costbar .fig .val{font-family:"IBM Plex Mono",monospace; font-size:17px; font-variant-numeric:tabular-nums}
+.costbar .grow{flex:1 1 190px; min-width:170px}
+.costbar label{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:10.5px; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--muted);
+  display:flex; justify-content:space-between; gap:10px}
+.costbar label b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--ink); letter-spacing:0; font-size:13px}
+tr.best td{background:color-mix(in srgb, var(--deck) 11%, transparent)}
+tr.best td:first-child{font-weight:600}
+#cost a{color:inherit; text-decoration:underline; text-underline-offset:2px}
+.badge{display:inline-block; font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:10.5px;
+  font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:2px 7px; border-radius:2px;
+  background:var(--deck); color:var(--paper); margin-right:7px; white-space:nowrap}
+td .sub2{color:var(--muted); font-size:12px}
+.foot{margin-top:14px; font-size:13px; color:var(--muted); max-width:78ch; line-height:1.55}
+.foot b{color:var(--ink-2)}
 section > h2{margin:0 0 4px; font-size:19px; font-weight:600; letter-spacing:-.005em}
 section > .sub{margin:0 0 16px; color:var(--muted); font-size:14px; max-width:63ch}
 .drawings{display:grid; grid-template-columns:1fr; gap:26px}
 @media(min-width:860px){ .drawings{grid-template-columns:1.12fr 1fr} }
 figure{margin:0; border:1px solid var(--rule); border-radius:3px; background:var(--surface); padding:14px}
-figcaption{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11px; font-weight:600;
+figcaption{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:11px; font-weight:600;
   letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin-bottom:10px}
 svg{display:block; width:100%; height:auto}
 
 table{border-collapse:collapse; width:100%; font-size:14px}
 .tblwrap{overflow-x:auto; border:1px solid var(--rule); border-radius:3px}
-th,td{padding:9px 14px; text-align:right; border-bottom:1px solid var(--rule); white-space:nowrap}
+th,td{padding:9px 11px; text-align:right; border-bottom:1px solid var(--rule); white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
-thead th{font-family:"IBM Plex Sans Condensed",sans-serif; font-size:11px; font-weight:600;
+thead th{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:11px; font-weight:600;
   letter-spacing:.11em; text-transform:uppercase; color:var(--muted); background:var(--surface)}
 tbody tr:last-child td{border-bottom:none}
 td.n{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
@@ -136,122 +161,104 @@ footer{border-top:1px solid var(--rule); padding-top:18px; color:var(--muted); f
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">Gaussian splat survey &middot; derived geometry</div>
-  <h1>Balcony Deck Survey</h1>
-  <p>Everything below is measured from your splat, levelled to true vertical and referenced to the door threshold. The left edge follows the rock face where the ground rises to floor level; depth and both right-hand corners are yours to set.</p>
+  <div class="topline">
+    <div class="eyebrow" data-i18n="eyebrow">Gaussian splat survey &middot; derived geometry</div>
+    <nav class="lang" aria-label="Language">
+      <a href="?lang=en" data-lang="en" hreflang="en" lang="en">EN</a>
+      <a href="?lang=th" data-lang="th" hreflang="th" lang="th">ไทย</a>
+    </nav>
+  </div>
+  <h1 data-i18n="title">Balcony Deck Survey</h1>
+  <p data-i18n="intro">Everything below is measured from your splat, levelled to true vertical and referenced to the door threshold. The left edge follows the rock face where the ground rises to floor level; depth and both right-hand corners are yours to set.</p>
 </header>
 
 <div class="tiles" id="tiles"></div>
 
 <div class="stage">
   <canvas id="view"></canvas>
-  <div class="hint">Drag to orbit &middot; scroll to zoom</div>
-  <div class="loading" id="loading">Loading scan &hellip;</div>
+  <div class="hint" data-i18n="hint">Drag to orbit &middot; scroll to zoom</div>
+  <div class="loading" id="loading" data-i18n="loading">Loading scan &hellip;</div>
   <div class="legend">
-    <span><i class="sw" style="background:var(--deck)"></i>Deck floor</span>
-    <span><i class="sw" style="background:var(--rock)"></i>Rock line at floor level</span>
-    <span><i class="sw" style="background:#B9A87E"></i>Ground surface</span>
-    <span><i class="sw" style="background:#D8D4C2"></i>Door opening</span>
-    <span><i class="sw" style="background:var(--rock)"></i>Eye level 1.6 m</span>
+    <span><i class="sw" style="background:var(--deck)"></i><span data-i18n="lg-deck">Deck floor</span></span>
+    <span><i class="sw" style="background:var(--rock)"></i><span data-i18n="lg-rock">Rock line at floor level</span></span>
+    <span><i class="sw" style="background:#B9A87E"></i><span data-i18n="lg-ground">Ground surface</span></span>
+    <span><i class="sw" style="background:#D8D4C2"></i><span data-i18n="lg-door">Door opening</span></span>
+    <span><i class="sw" style="background:var(--rock)"></i><span data-i18n="eye">Eye level 1.6 m</span></span>
   </div>
 </div>
 
 <div class="controls">
   <div class="ctl">
-    <label for="depth">Deck depth<b><span id="depthv">4.00</span> m</b></label>
+    <label for="depth"><span data-i18n="c-depth">Deck depth</span><b><span id="depthv">4.00</span> m</b></label>
     <input type="range" id="depth" min="1.5" max="6.2" step="0.05" value="4">
-    <div class="note">Measured out from the face of the wall.</div>
+    <div class="note" data-i18n="n-depth">Measured out from the face of the wall.</div>
   </div>
   <div class="ctl">
-    <label for="rw">Right corner at wall<b><span id="rwv">1.50</span> m</b></label>
+    <label for="rw"><span data-i18n="c-rw">Right corner at wall</span><b><span id="rwv">1.50</span> m</b></label>
     <input type="range" id="rw" min="0" max="3.3" step="0.05" value="1.5">
-    <div class="note">Right of the door centreline, at the wall. The plan dimensions this back to the right door jamb; a negative figure means the corner stops short of it.</div>
+    <div class="note" data-i18n="n-rw">Right of the door centreline, at the wall. The plan dimensions this back to the right door jamb; a negative figure means the corner stops short of it.</div>
   </div>
   <div class="ctl">
-    <label for="rf">Right corner at front<b><span id="rfv">1.50</span> m</b></label>
+    <label for="rf"><span data-i18n="c-rf">Right corner at front</span><b><span id="rfv">1.50</span> m</b></label>
     <input type="range" id="rf" min="0" max="3.3" step="0.05" value="1.5">
-    <div class="note">Same measurement at the front edge. Set the two differently and the right side runs on a slant.</div>
+    <div class="note" data-i18n="n-rf">Same measurement at the front edge. Set the two differently and the right side runs on a slant.</div>
   </div>
   <div class="ctl">
-    <label for="drop">Floor below threshold<b><span id="dropv">0.00</span> m</b></label>
+    <label for="drop"><span data-i18n="c-drop">Floor below threshold</span><b><span id="dropv">0.00</span> m</b></label>
     <input type="range" id="drop" min="0" max="0.5" step="0.01" value="0">
-    <div class="note">Sink the whole floor to lose a step at the door, or to reduce the drop underneath. The rock line moves in as you go down.</div>
+    <div class="note" data-i18n="n-drop">Sink the whole floor to lose a step at the door, or to reduce the drop underneath. The rock line moves in as you go down.</div>
   </div>
   <div class="ctl">
-    <label for="scale">Opening, measured<b>m</b></label>
+    <label for="scale"><span data-i18n="c-scale">Opening, measured</span><b>m</b></label>
     <input type="number" id="scale" min="0.5" max="8" step="0.01" value="3.00">
-    <div class="note">The scan reads 2.66 of its own units across the opening. Your 3&nbsp;m sets the whole survey to scale.</div>
+    <div class="note" data-i18n="n-scale">The scan reads 2.66 of its own units across the opening. Your 3&nbsp;m sets the whole survey to scale.</div>
   </div>
   <div class="ctl" style="grid-column:1/-1">
-    <label>Show</label>
+    <label data-i18n="show">Show</label>
     <div class="toggles">
-      <button id="t-scan" aria-pressed="true">Scan &mdash; terrain &amp; rocks</button>
-      <button id="t-rail" aria-pressed="true">Railing</button>
-      <button id="t-horizon" aria-pressed="false">Horizon photos</button>
-      <button id="t-eye" aria-pressed="false">Eye level 1.6 m</button>
-      <button id="t-terrain" aria-pressed="false">Ground surface</button>
-      <button id="t-deck" aria-pressed="true">Deck</button>
-      <button id="t-grid" aria-pressed="true">1 m grid</button>
-      <button id="t-wall" aria-pressed="false">Wall plane</button>
+      <button id="t-scan" aria-pressed="true" data-i18n="t-scan">Scan &mdash; terrain &amp; rocks</button>
+      <button id="t-rail" aria-pressed="true" data-i18n="t-rail">Railing</button>
+      <button id="t-horizon" aria-pressed="false" data-i18n="t-horizon">Horizon photos</button>
+      <button id="t-eye" aria-pressed="false" data-i18n="eye">Eye level 1.6 m</button>
+      <button id="t-terrain" aria-pressed="false" data-i18n="lg-ground">Ground surface</button>
+      <button id="t-deck" aria-pressed="true" data-i18n="t-deck">Deck</button>
+      <button id="t-grid" aria-pressed="true" data-i18n="t-grid">1 m grid</button>
+      <button id="t-wall" aria-pressed="false" data-i18n="t-wall">Wall plane</button>
     </div>
   </div>
   <div class="ctl" id="bearing-ctl" hidden>
-    <label for="bearing">Deck faces<b><span id="bearingv">4</span>&deg; true</b></label>
+    <label for="bearing"><span data-i18n="c-bearing">Deck faces</span><b><span id="bearingv">4</span>&deg; <span data-i18n="true">true</span></b></label>
     <input type="range" id="bearing" min="-40" max="60" step="1" value="4">
-    <div class="note">Spins the photo backdrop. The default comes from matching the splat's own blurred ridge to the hill in the photos, so it is good to roughly &plusmn;10&deg;. Switch Scan on at the same time and nudge this until the photographed hill sits on the splat's grey smudge.</div>
+    <div class="note" data-i18n="n-bearing">Spins the photo backdrop. The default comes from matching the splat's own blurred ridge to the hill in the photos, so it is good to roughly &plusmn;10&deg;. Switch Scan on at the same time and nudge this until the photographed hill sits on the splat's grey smudge.</div>
   </div>
   <div class="warn" id="warn" hidden></div>
 </div>
 
 <section>
-  <h2>Drawings</h2>
-  <p class="sub">Plan looking down; section cut on the door centreline. Both redraw as you change the controls.</p>
+  <h2 data-i18n="drawings">Drawings</h2>
+  <p class="sub" data-i18n="drawings-sub">Plan looking down; section cut on the door centreline. Both redraw as you change the controls.</p>
   <div class="drawings">
-    <figure><figcaption>Plan &mdash; floor outline &middot; wall at the bottom</figcaption><svg id="plan" viewBox="0 0 560 500"></svg></figure>
-    <figure><figcaption>Section on door centreline</figcaption><svg id="sect" viewBox="0 0 440 310"></svg></figure>
+    <figure><figcaption data-i18n="fig-plan">Plan &mdash; floor outline &middot; wall at the bottom</figcaption><svg id="plan" viewBox="0 0 560 500"></svg></figure>
+    <figure><figcaption data-i18n="fig-sect">Section on door centreline</figcaption><svg id="sect" viewBox="0 0 440 310"></svg></figure>
   </div>
 </section>
 
 <section>
-  <h2>Clearance under the floor</h2>
-  <p class="sub">Drop from the finished floor down to existing ground, sampled across the deck. Distances along the wall are positive to the left.</p>
-  <div class="tblwrap"><table id="clear"></table></div>
-</section>
-
-<section>
-  <h2>Site photos</h2>
-  <p class="sub">Your five shots, each carrying a compass heading in its metadata. That is what let me place the horizon backdrop &mdash; and it fixes which way the deck faces.</p>
-  <div class="photos" id="photos"></div>
-  <div class="notes">
-    <div><b>Overhead lines.</b> Cables cross the site in four of the five shots. I cannot measure their height from a photo, but a raised deck with a 1&nbsp;m rail puts people closer to them &mdash; worth checking clearance on site before you build.</div>
-    <div><b>Shade netting.</b> Black netting is draped over the boulders on the left. Some of what the scan reads as rock surface is netting sitting a little above it.</div>
-    <div><b>The boulders are granite.</b> Large, rounded, and clearly sound &mdash; good bearing for posts, but they will need drilling and resin anchors rather than pads.</div>
-  </div>
-</section>
-
-<section>
-  <h2>Before you cut anything</h2>
-  <div class="checks">
-    <div class="check">
-      <h3>The horizon is photographic, not surveyed</h3>
-      <p>Your own shots, reprojected onto a cylinder at the bearings in their metadata. They cover bearing <span class="num">&minus;21&deg;</span> to <span class="num">+101&deg;</span>; outside that arc there are no photographs, so you get graded sky and distant ground. Bearing is recorded, camera pitch is not, so the vertical placement assumes the phone was level. Context, never a measurement.</p>
-    </div>
-    <div class="check">
-      <h3>Where it would land</h3>
-      <p>On the door centreline the ground climbs to floor level at about <span class="num">6.0&nbsp;m</span> out. Push the depth slider there and the front edge meets grade instead of standing off it.</p>
-    </div>
-    <div class="check">
-      <h3>Scale rests on one measurement</h3>
-      <p>Your <span class="num">3.00&nbsp;m</span> opening sets everything, and it corroborates: the scan then makes the frame <span class="num">2.37&ndash;2.48&nbsp;m</span> tall, right for a 3&nbsp;&times;&nbsp;2.4&nbsp;m glazed opening. If the real frame is nearer 2.1&nbsp;m tall, your 3&nbsp;m spans wider than the two uprights the scan found.</p>
-    </div>
-    <div class="check">
-      <h3>Watch the right-hand corner</h3>
-      <p>Ground falls <span class="num">2.2&nbsp;m</span> below floor level at the wall on the right. Whatever you set the right corners to, that side is a genuine drop, not a step.</p>
+  <h2 data-i18n="cost">Cost of the deck boards</h2>
+  <p class="sub" data-i18n="cost-sub">Quantities and totals follow the deck above &mdash; move any slider and every figure here moves with it.</p>
+  <div class="costbar">
+    <div class="fig"><span class="lab" data-i18n="floor-area">Floor area</span><span class="val" id="c-area">&mdash;</span></div>
+    <div class="fig"><span class="lab" data-i18n="order-area">Board area to buy</span><span class="val" id="c-order">&mdash;</span></div>
+    <div class="fig grow">
+      <label for="waste"><span data-i18n="waste">Cutting allowance</span><b><span id="wastev">7.5</span>%</b></label>
+      <input type="range" id="waste" min="0" max="30" step="0.5" value="7.5">
     </div>
   </div>
+  <div class="tblwrap"><table id="cost"></table></div>
+  <p class="foot" id="costfoot"></p>
 </section>
 
-<footer>
+<footer data-i18n="footer">
   Coordinates: <b>out</b> is measured from the wall face, <b>along</b> the wall is positive to the left as you step out, and floor level is the door threshold. Ground surface is the median splat height per cell with foliage filtered out; sparse cells are interpolated. The scan thins past roughly 5&nbsp;m out and behind the rock, so treat those edges as approximate.
 </footer>
 </div>
@@ -259,19 +266,122 @@ footer{border-top:1px solid var(--rule); padding-top:18px; color:var(--muted); f
 <script>
 (async function(){
 "use strict";
+/* ---------- language: English lives in the markup, Thai here; ?lang=th selects it ---------- */
+const TH={
+  'doc-title':'สำรวจพื้นระเบียง',
+  eyebrow:'สำรวจด้วย Gaussian splat &middot; เรขาคณิตที่คำนวณได้',
+  title:'สำรวจพื้นระเบียง',
+  intro:'ทุกค่าด้านล่างวัดจาก splat ของคุณ ปรับให้ตั้งฉากจริงและอ้างอิงจากธรณีประตู ขอบซ้ายไปตามแนวหน้าหินตรงที่พื้นดินสูงขึ้นถึงระดับพื้น ส่วนความลึกและมุมด้านขวาทั้งสองมุมคุณกำหนดเองได้',
+  hint:'ลากเพื่อหมุน &middot; เลื่อนเพื่อซูม',
+  loading:'กำลังโหลดสแกน &hellip;',
+  'lg-deck':'พื้นเด็ค', 'lg-rock':'แนวหินที่ระดับพื้น', 'lg-ground':'ผิวดิน', 'lg-door':'ช่องประตู',
+  eye:'ระดับสายตา 1.6 m',
+  'c-depth':'ความลึกพื้นเด็ค', 'n-depth':'วัดออกมาจากผิวผนัง',
+  'c-rw':'มุมขวาที่ผนัง',
+  'n-rw':'ระยะไปทางขวาจากเส้นกึ่งกลางประตู ที่แนวผนัง แปลนจะบอกระยะนี้เทียบกับวงกบประตูด้านขวา ค่าติดลบหมายถึงมุมหยุดก่อนถึงวงกบ',
+  'c-rf':'มุมขวาที่ขอบหน้า',
+  'n-rf':'วัดแบบเดียวกันที่ขอบด้านหน้า ถ้าตั้งสองค่าไม่เท่ากัน ด้านขวาจะเป็นแนวเฉียง',
+  'c-drop':'พื้นต่ำกว่าธรณีประตู',
+  'n-drop':'ลดระดับพื้นทั้งหมดลงเพื่อให้มีขั้นลงที่ประตู หรือเพื่อลดความสูงจากพื้นถึงดินด้านล่าง แนวหินจะขยับเข้ามาเมื่อพื้นต่ำลง',
+  'c-scale':'ความกว้างช่องประตูที่วัดได้',
+  'n-scale':'สแกนอ่านความกว้างช่องประตูได้ 2.66 หน่วยของตัวเอง ค่า 3&nbsp;m ที่คุณวัดใช้กำหนดสเกลของการสำรวจทั้งหมด',
+  show:'แสดง',
+  't-scan':'สแกน &mdash; ภูมิประเทศและหิน', 't-rail':'ราวกันตก', 't-horizon':'ภาพเส้นขอบฟ้า',
+  't-deck':'เด็ค', 't-grid':'กริด 1 m', 't-wall':'ระนาบผนัง',
+  'c-bearing':'เด็คหันไปทาง', true:'(ทิศเหนือจริง)',
+  'n-bearing':'หมุนฉากหลังภาพถ่าย ค่าเริ่มต้นได้จากการจับคู่สันเขาที่เบลอใน splat กับเนินเขาในภาพถ่าย จึงแม่นยำราว &plusmn;10&deg; เปิดสแกนไปพร้อมกันแล้วปรับค่านี้จนเนินเขาในภาพตรงกับรอยสีเทาของ splat',
+  drawings:'แบบ',
+  'drawings-sub':'แปลนมองจากด้านบน รูปตัดตามเส้นกึ่งกลางประตู ทั้งสองวาดใหม่ทุกครั้งที่คุณปรับค่า',
+  'fig-plan':'แปลน &mdash; โครงร่างพื้น &middot; ผนังอยู่ด้านล่าง',
+  'fig-sect':'รูปตัดตามเส้นกึ่งกลางประตู',
+  cost:'ค่าไม้พื้นเด็ค',
+  'cost-sub':'จำนวนและยอดรวมเปลี่ยนตามเด็คด้านบน ขยับแถบเลื่อนใดก็ได้ ตัวเลขทั้งหมดในส่วนนี้จะเปลี่ยนตาม',
+  'floor-area':'พื้นที่พื้น', 'order-area':'พื้นที่ไม้ที่ต้องซื้อ', waste:'เผื่อเศษตัด',
+  footer:'พิกัด: <b>ออก</b> วัดจากผิวผนัง <b>ตามแนวผนัง</b> เป็นค่าบวกไปทางซ้ายเมื่อคุณก้าวออกไป และระดับพื้นคือธรณีประตู ผิวดินคือค่ามัธยฐานความสูงของ splat ในแต่ละช่องโดยกรองต้นไม้ใบไม้ออก ช่องที่มีข้อมูลน้อยใช้การประมาณค่าในช่วง สแกนจะบางลงเมื่อเกินราว 5&nbsp;m ออกไปและด้านหลังหิน จึงควรถือว่าขอบเหล่านั้นเป็นค่าประมาณ',
+  /* strings built in script */
+  'err-data':'โหลดข้อมูลการสำรวจไม่ได้ ให้เปิดโฟลเดอร์นี้ผ่าน http แทนการเปิดไฟล์โดยตรง',
+  'err-scan':'โหลดสแกนไม่ได้',
+  tiles:['พื้นที่พื้น','ความลึกจากผนัง','ความกว้างที่ผนัง','ความกว้างที่ขอบหน้า','ขอบที่ต้องเก็บ',
+         'ความสูงสูงสุดถึงพื้นดิน','วงกบถึงมุมขวา','หินถึงวงกบซ้าย','ขั้นลงที่ประตู','ความยาวราวกันตก'],
+  'w-narrow':v=>`ที่ความลึกนี้ หินเข้ามาใกล้ขอบขวาเหลือเพียง ${v} m พื้นไม่มีที่พอ`,
+  'w-depth':v=>`ที่ระดับพื้นนี้ สแกนไม่ครอบคลุมหน้าหินเกิน ${v} m ความลึกจึงถูกจำกัดไว้ที่ค่านั้น`,
+  'w-step':v=>`ขั้นลง ${v} m จากธรณีประตูต้องมีขั้นบันไดหรือชานพักที่ประตู`,
+  'p-rock':'หน้าหิน', 'p-wall':'ผนัง', 'p-opening':v=>`ช่องประตู ${v} m`, 'p-in':' (ด้านใน)',
+  'p-flush':'มุมเสมอวงกบ', 'p-rail':'ราว 1.0 m', 'p-left':'&#8592; ซ้าย', 'p-right':'ขวา &#8594;',
+  's-room':'ห้อง', 's-threshold':'ธรณีประตู', 's-deck':'พื้นเด็ค',
+  's-below':v=>` &mdash; ต่ำกว่าธรณีประตู ${v} m`, 's-level':' &mdash; ระดับเดียวกับธรณีประตู',
+  's-figures':'ตัวเลข = ความสูงจากพื้นเด็คถึงดิน, m',
+  cols:['ตัวเลือก','ขนาดไม้','ราคา','พื้นที่ต่อแผ่น','จำนวนแผ่น','ไม่ใช้เศษซ้ำ','ค่าไม้','ต่อ m²','หมายเหตุ'],
+  costfoot:(len,name,noReuse,boards)=>
+    'จำนวนไม้ที่ต้องสั่งคือพื้นที่พื้นบวกค่าเผื่อเศษตัด หารด้วยพื้นที่ที่ไม้หนึ่งแผ่นปูได้ '
+   +'ซึ่งสมมติว่าเศษที่ตัดเหลือนำไปใช้ในแถวถัดไปได้ เด็คเป็นรูปลิ่ม แต่ละแถวจึงยาวไม่เท่ากัน '
+   +`ถ้าตัดทุกแถวจากไม้ใหม่ยาว ${len}&nbsp;cm โดยไม่ใช้เศษเลย ตัวเลือก ${name} ต้องใช้ <b>${noReuse}</b> แผ่น `
+   +`แทนที่จะเป็น <b>${boards}</b> แผ่น ตัวเลขจริงอยู่ระหว่างสองค่านี้ ให้ถือช่วงนี้เป็นความไม่แน่นอน<br><br>`
+   +'<b>ไม่รวม:</b> โครงและตง คลิป สกรู เสาและฐานราก ราวกันตก และค่าขนส่ง ราคาเป็นราคาที่คุณพบและอาจเปลี่ยนแปลงได้'
+};
+const EN={
+  'doc-title':document.title,
+  'err-data':'Could not load the survey data. Serve this folder over http rather than opening the file directly.',
+  'err-scan':'Scan could not be loaded',
+  tiles:['Floor area','Depth from wall','Width at the wall','Width at the front','Edge to trim',
+         'Max drop to ground','Jamb to right corner','Rock to left jamb','Step down at door','Railing length'],
+  'w-narrow':v=>`At this depth the rock has closed in to within ${v} m of the right edge — the floor runs out of room.`,
+  'w-depth':v=>`At this floor level the scan stops covering the rock face past ${v} m, so the depth is capped there.`,
+  'w-step':v=>`A ${v} m step down from the threshold needs a step or a landing at the door.`,
+  'p-rock':'rock face', 'p-wall':'wall', 'p-opening':v=>`opening ${v} m`, 'p-in':' in',
+  'p-flush':'corner flush with jamb', 'p-rail':'1.0 m rail', 'p-left':'&#8592; LEFT', 'p-right':'RIGHT &#8594;',
+  's-room':'room', 's-threshold':'threshold', 's-deck':'deck floor',
+  's-below':v=>` &mdash; ${v} m below threshold`, 's-level':' &mdash; level with threshold',
+  's-figures':'figures = drop from floor to ground, m',
+  cols:['Option','Board','Price','Coverage','Boards','No reuse','Board cost','Per m²','Notes'],
+  costfoot:(len,name,noReuse,boards)=>
+    'Boards to order is the floor area plus the cutting allowance, divided by what one board covers, '
+   +'which assumes offcuts carry into the next course. The deck is a wedge, so every course is a different '
+   +`length: cut each from fresh ${len}&nbsp;cm stock with nothing carried over and the `
+   +`${name} option needs <b>${noReuse}</b> boards rather than <b>${boards}</b>. The real number sits `
+   +'between the two &mdash; treat that spread as the uncertainty.<br><br>'
+   +'<b>Not included:</b> frame and joists, clips, screws, posts and footings, the railing, or delivery. '
+   +'Prices are as you found them and will move.'
+};
+const i18nEls=[...document.querySelectorAll('[data-i18n]')];
+i18nEls.forEach(el=>{ const k=el.dataset.i18n; if(!(k in EN)) EN[k]=el.innerHTML.trim(); });
+const langFromUrl=()=>new URLSearchParams(location.search).get('lang')==='th'?'th':'en';
+let LANG=langFromUrl(), ready=false;
+const t=(k,...a)=>{ const v=(LANG==='th'&&k in TH)?TH[k]:EN[k]; return typeof v==='function'?v(...a):v; };
+/* per-language field from boards.json: note_th falls back to note */
+const tf=(o,k)=>(LANG==='th'&&o[k+'_th'])||o[k];
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.title=t('doc-title');
+  i18nEls.forEach(el=>{ el.innerHTML=t(el.dataset.i18n); });
+  document.querySelectorAll('.lang a').forEach(a=>a.setAttribute('aria-current',String(a.dataset.lang===LANG)));
+  if(ready) refresh();
+}
+document.querySelectorAll('.lang a').forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault();
+  if(a.dataset.lang===LANG) return;
+  LANG=a.dataset.lang;
+  const u=new URL(location.href);
+  if(LANG==='en') u.searchParams.delete('lang'); else u.searchParams.set('lang',LANG);
+  history.pushState(null,'',u);
+  applyLang();
+}));
+addEventListener('popstate',()=>{ LANG=langFromUrl(); applyLang(); });
+applyLang();
+
 const grab=async u=>{
-  const r=await fetch(u);
+  const r=await fetch(u,{cache:'no-cache'});
   if(!r.ok) throw new Error(u+' -> '+r.status);
   return r.json();
 };
-let D,CM,LV,HZ,GAL;
+let D,CM,LV,HZ,COST;
 try{
-  [D,CM,LV,HZ,GAL]=await Promise.all([
+  [D,CM,LV,HZ,COST]=await Promise.all([
     grab('data/scene.json'), grab('data/scan.json'), grab('data/levels.json'),
-    grab('data/horizon.json'), grab('data/photos.json')]);
+    grab('data/horizon.json'), grab('data/boards.json')]);
 }catch(err){
-  document.getElementById('loading').textContent=
-    'Could not load the survey data. Serve this folder over http rather than opening the file directly.';
+  const el=document.getElementById('loading');
+  el.dataset.i18n='err-data'; el.innerHTML=t('err-data');
   return;
 }
 const CELL=D.cell, NS=D.ns, NT=D.nt, S0=D.s0, T0=D.t0;
@@ -329,6 +439,7 @@ function polygon(){
 }
 function area(p){ let a=0; for(let i=0;i<p.length;i++){ const j=(i+1)%p.length;
   a+=p[i][0]*p[j][1]-p[j][0]*p[i][1]; } return Math.abs(a)/2; }
+const area_=area;
 function perim(p){ let L=0; for(let i=0;i<p.length;i++){ const j=(i+1)%p.length;
   L+=Math.hypot(p[j][0]-p[i][0],p[j][1]-p[i][1]); } return L; }
 function groundM(sM,tM){                        // ground level in metres, null outside the grid
@@ -433,11 +544,12 @@ function buildCloud(bytes){
 /* 1.7 MB of quantised points, fetched rather than inlined */
 async function loadCloud(){
   try{
-    const r=await fetch('assets/scan.bin');
+    const r=await fetch('assets/scan.bin',{cache:'no-cache'});
     if(!r.ok) throw new Error('scan.bin -> '+r.status);
     buildCloud(new Uint8Array(await r.arrayBuffer()));
   }catch(err){
-    document.getElementById('loading').textContent='Scan could not be loaded';
+    const el=document.getElementById('loading');
+    el.dataset.i18n='err-scan'; el.innerHTML=t('err-scan');
   }
 }
 
@@ -522,9 +634,10 @@ function buildRail(){
   railGrp.userData.length=L;
   scene.add(railGrp);
 }
-/* Photographic horizon. Four surfaces, so the enclosure is closed from every
-   angle: a graded sky dome, the photo band at its true bearings, a skirt that
-   carries each azimuth's own colour down from the band, and distant ground. */
+/* Photographic horizon. Two surfaces: a full sphere that is sky above the
+   skyline and distant ground below it, so the enclosure is closed whichever way
+   you turn or tilt, and the photographs on a cylinder at their true bearings,
+   reaching from 25 deg below the skyline to 34 deg above it. */
 function texFromUrl(url){
   const tex=new THREE.TextureLoader().load(url);
   tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
@@ -533,7 +646,7 @@ function texFromUrl(url){
 /* a cylindrical strip between two elevations, u running across the panorama */
 function strip(R,eyeY,cz,elA,elB,vA,vB,tex,nAz){
   const pos=[],uv=[],idx=[];
-  const b0=HZ.b0,b1=HZ.b1, NE=6;
+  const b0=HZ.b0,b1=HZ.b1, NE=20;
   for(let j=0;j<=NE;j++){
     const t=j/NE, el=elA+(elB-elA)*t, v=vA+(vB-vA)*t;
     const y=eyeY+R*Math.tan(THREE.MathUtils.degToRad(el));
@@ -556,19 +669,22 @@ function strip(R,eyeY,cz,elA,elB,vA,vB,tex,nAz){
 function buildHorizon(){
   const bandTex=texFromUrl('assets/horizon.jpg');
   if(!bandTex) return;
-  const skirtTex=texFromUrl('assets/skirt.jpg');
-  const R=90, EYE=1.0, CZ=2.5, DOME=420, GND=0x5C6349;
+  const R=90, EYE=1.0, CZ=2.5, DOME=420;
   horizon=new THREE.Group();
 
-  // sky dome, graded from the panorama's own sky tones
-  const lo=new THREE.Color(0x5F7B9B), hi=new THREE.Color(0x4D6990);
-  const NA=48, NEd=14, dp=[], dc=[], di=[];
+  /* a full sphere: sky above the skyline, distant ground below it, so there is
+     no plane edge to catch the eye whichever way you turn or tilt */
+  const gnd=new THREE.Color(0x5C6349), lo=new THREE.Color(0x587497), hi=new THREE.Color(0x4D6990);
+  const NA=64, NEd=40, dp=[], dc=[], di=[];
   for(let j=0;j<=NEd;j++){
-    const t=j/NEd, el=THREE.MathUtils.degToRad(-6+96*t);
-    const c=lo.clone().lerp(hi,Math.pow(t,0.7));
+    const el=-90+180*j/NEd, e=THREE.MathUtils.degToRad(el);
+    let c;
+    if(el<=-6) c=gnd.clone();
+    else if(el<0) c=gnd.clone().lerp(lo,(el+6)/6);
+    else c=lo.clone().lerp(hi,Math.pow(el/90,0.7));
     for(let i=0;i<=NA;i++){
       const az=i/NA*Math.PI*2;
-      dp.push(DOME*Math.cos(el)*Math.sin(az), DOME*Math.sin(el), CZ+DOME*Math.cos(el)*Math.cos(az));
+      dp.push(DOME*Math.cos(e)*Math.sin(az), DOME*Math.sin(e), CZ+DOME*Math.cos(e)*Math.cos(az));
       dc.push(c.r,c.g,c.b);
     }
   }
@@ -582,15 +698,8 @@ function buildHorizon(){
   horizon.add(new THREE.Mesh(dg,new THREE.MeshBasicMaterial({
     vertexColors:true, side:THREE.BackSide, depthWrite:false})));
 
-  // distant ground, capping everything below
-  const disc=new THREE.Mesh(new THREE.CircleGeometry(DOME,72),
-    new THREE.MeshBasicMaterial({color:GND, side:THREE.DoubleSide, depthWrite:false}));
-  disc.rotation.x=-Math.PI/2; disc.position.set(0,-3.4,CZ);
-  horizon.add(disc);
-
-  // the photographs, then the skirt that carries them down to the ground
+  // the photographs, reaching from well below the skyline up into the sky
   horizon.add(strip(R,EYE,CZ,HZ.el0,HZ.el1,0,1,bandTex,150));
-  if(skirtTex) horizon.add(strip(R,EYE,CZ,-4.5,HZ.el0,0,1,skirtTex,150));
 
   horizon.rotation.y=THREE.MathUtils.degToRad(st.outBearing-HZ.out_bearing_default);
   scene.add(horizon);
@@ -636,18 +745,19 @@ function maxDrop(){
 function refresh(){
   const p=polygon();
   const wWall=leftM(0)-rightM(0), wFront=leftM(st.depth)-rightM(st.depth);
+  const labs=t('tiles');
   document.getElementById('tiles').innerHTML=[
-    ['Floor area', f(area(p),1),'m²'],
-    ['Depth from wall', f(st.depth,2),'m'],
-    ['Width at the wall', f(wWall,2),'m'],
-    ['Width at the front', f(wFront,2),'m'],
-    ['Edge to trim', f(perim(p),1),'m'],
-    ['Max drop to ground', f(maxDrop(),2),'m'],
-    ['Jamb to right corner', f(st.rw-Math.abs(JAMBS[3]*st.K),2),'m'],
-    ['Rock to left jamb', f(leftM(0)-JAMBS[0]*st.K,2),'m'],
-    ['Step down at door', f(st.drop,2),'m'],
-    ['Railing length', f(Math.hypot(rightM(st.depth)-rightM(0),st.depth),2),'m']
-  ].map(t=>`<div class="tile"><span class="lab">${t[0]}</span><span class="val">${t[1]}<small>${t[2]}</small></span></div>`).join('');
+    [f(area(p),1),'m²'],
+    [f(st.depth,2),'m'],
+    [f(wWall,2),'m'],
+    [f(wFront,2),'m'],
+    [f(perim(p),1),'m'],
+    [f(maxDrop(),2),'m'],
+    [f(st.rw-Math.abs(JAMBS[3]*st.K),2),'m'],
+    [f(leftM(0)-JAMBS[0]*st.K,2),'m'],
+    [f(st.drop,2),'m'],
+    [f(Math.hypot(rightM(st.depth)-rightM(0),st.depth),2),'m']
+  ].map((v,i)=>`<div class="tile"><span class="lab">${labs[i]}</span><span class="val">${v[0]}<small>${v[1]}</small></span></div>`).join('');
   document.getElementById('depthv').textContent=f(st.depth);
   document.getElementById('rwv').textContent=f(st.rw);
   document.getElementById('rfv').textContent=f(st.rf);
@@ -655,12 +765,12 @@ function refresh(){
 
   const w=document.getElementById('warn');
   const msgs=[];
-  if(wFront<0.6) msgs.push('At this depth the rock has closed in to within '+f(wFront)+' m of the right edge — the floor runs out of room.');
-  if(st.depth>maxDepthM()-0.06) msgs.push('At this floor level the scan stops covering the rock face past '+f(maxDepthM(),1)+' m, so the depth is capped there.');
-  if(st.drop>0.2) msgs.push('A '+f(st.drop)+' m step down from the threshold needs a step or a landing at the door.');
+  if(wFront<0.6) msgs.push(t('w-narrow',f(wFront)));
+  if(st.depth>maxDepthM()-0.06) msgs.push(t('w-depth',f(maxDepthM(),1)));
+  if(st.drop>0.2) msgs.push(t('w-step',f(st.drop)));
   w.hidden=msgs.length===0; w.textContent=msgs.join(' ');
 
-  drawPlan(p); drawSect(); drawTable();
+  drawPlan(p); drawSect(); drawCost();
 }
 
 /* plan: looking down with the way you face when you step out running up the
@@ -678,19 +788,19 @@ function drawPlan(p){
     fill="none" stroke="var(--rock)" stroke-width="2.4" stroke-dasharray="7 4"/>`);
   const mid=rc[Math.floor(rc.length*0.5)];
   o.push(`<text x="${X(mid[1])-10}" y="${Y(mid[0])}" text-anchor="end" fill="var(--rock)"
-    font-family="IBM Plex Sans Condensed" font-size="12">rock face</text>`);
+    font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="12">${t('p-rock')}</text>`);
   // floor
   o.push(`<path d="${p.map((q,i)=>(i?'L':'M')+X(q[1]).toFixed(1)+' '+Y(q[0]).toFixed(1)).join(' ')} Z"
     fill="var(--deck)" fill-opacity="0.16" stroke="var(--deck)" stroke-width="2.2"/>`);
   // wall along the bottom
   o.push(`<line x1="${xl-16}" y1="${W0}" x2="${xr+16}" y2="${W0}" stroke="var(--ink)" stroke-width="3.5"/>`);
   o.push(`<text x="${xl-16}" y="${W0+17}" fill="var(--ink-2)"
-    font-family="IBM Plex Sans Condensed" font-size="12">wall</text>`);
+    font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="12">${t('p-wall')}</text>`);
   const jl=JAMBS[0]*st.K, jr=JAMBS[3]*st.K;
   o.push(`<line x1="${X(jl)}" y1="${W0}" x2="${X(jr)}" y2="${W0}" stroke="var(--surface)" stroke-width="5"/>`);
   o.push(`<line x1="${X(jl)}" y1="${W0}" x2="${X(jr)}" y2="${W0}" stroke="var(--deck)" stroke-width="2.5" stroke-dasharray="3 3"/>`);
-  o.push(`<text x="${X((jl+jr)/2)}" y="${W0+17}" fill="var(--deck)" font-family="IBM Plex Sans Condensed"
-    font-size="12" text-anchor="middle">opening ${f(OPENING_UNITS*st.K)} m</text>`);
+  o.push(`<text x="${X((jl+jr)/2)}" y="${W0+17}" fill="var(--deck)" font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai"
+    font-size="12" text-anchor="middle">${t('p-opening',f(OPENING_UNITS*st.K))}</text>`);
   // depth dimension up the right edge, text turned
   const dx=xr+36, my=(W0+Y(st.depth))/2;
   o.push(`<line x1="${dx}" y1="${W0}" x2="${dx}" y2="${Y(st.depth)}" stroke="var(--ink-2)" stroke-width="1"/>`);
@@ -723,10 +833,10 @@ function drawPlan(p){
     [a,b].forEach(x=>o.push(`<line x1="${x}" y1="${yy-5}" x2="${x}" y2="${yy+5}" stroke="var(--ink-2)" stroke-width="1"/>`));
     [a,b].forEach(x=>o.push(`<line x1="${x}" y1="${W0}" x2="${x}" y2="${yy}" stroke="var(--ink-2)" stroke-width="0.7" stroke-dasharray="2 3"/>`));
     o.push(`<text x="${(a+b)/2}" y="${yy-8}" text-anchor="middle" fill="var(--ink)"
-      font-family="IBM Plex Mono" font-size="12">${f(Math.abs(gap))} m${gap<0?' in':''}</text>`);
+      font-family="IBM Plex Mono" font-size="12">${f(Math.abs(gap))} m${gap<0?t('p-in'):''}</text>`);
   }else{
     o.push(`<text x="${(X(jr)+X(rightM(0)))/2}" y="${W0-13}" text-anchor="middle" fill="var(--muted)"
-      font-family="IBM Plex Sans Condensed" font-size="11.5">corner flush with jamb</text>`);
+      font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="11.5">${t('p-flush')}</text>`);
   }
   // railing on the right edge only
   if(st.rail){
@@ -739,14 +849,14 @@ function drawPlan(p){
       o.push(`<circle cx="${x}" cy="${y}" r="2.6" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.4"/>`);
     }
     o.push(`<text x="${(a[0]+b[0])/2+12}" y="${(a[1]+b[1])/2}" fill="var(--ink-2)"
-      font-family="IBM Plex Sans Condensed" font-size="11.5">1.0 m rail</text>`);
+      font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="11.5">${t('p-rail')}</text>`);
   }
   // the two adjustable corners
   [[0,rightM(0)],[st.depth,rightM(st.depth)]].forEach(([s,t])=>{
     o.push(`<circle cx="${X(t)}" cy="${Y(s)}" r="4.5" fill="var(--paper)" stroke="var(--deck)" stroke-width="2.2"/>`);
   });
-  o.push(`<text x="14" y="490" fill="var(--muted)" font-family="IBM Plex Sans Condensed" font-size="11.5" letter-spacing="1.4">&#8592; LEFT</text>`);
-  o.push(`<text x="546" y="490" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Sans Condensed" font-size="11.5" letter-spacing="1.4">RIGHT &#8594;</text>`);
+  o.push(`<text x="14" y="490" fill="var(--muted)" font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="11.5" letter-spacing="1.4">${t('p-left')}</text>`);
+  o.push(`<text x="546" y="490" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="11.5" letter-spacing="1.4">${t('p-right')}</text>`);
   svg.innerHTML=o.join('');
 }
 
@@ -764,15 +874,15 @@ function drawSect(){
   o.push(`<rect x="${X(-1.6)}" y="${Y(3.1)}" width="${X(0)-X(-1.6)}" height="${Y(-3.0)-Y(3.1)}" fill="var(--ink)" fill-opacity="0.1"/>`);
   o.push(`<line x1="${X(0)}" y1="${Y(3.1)}" x2="${X(0)}" y2="${Y(-3.0)}" stroke="var(--ink)" stroke-width="2"/>`);
   o.push(`<line x1="${X(-0.12)}" y1="${Y(HEAD*st.K)}" x2="${X(0.12)}" y2="${Y(HEAD*st.K)}" stroke="var(--ink)" stroke-width="2"/>`);
-  o.push(`<text x="${X(-1.5)}" y="${Y(1.3)}" fill="var(--ink-2)" font-family="IBM Plex Sans Condensed" font-size="12">room</text>`);
+  o.push(`<text x="${X(-1.5)}" y="${Y(1.3)}" fill="var(--ink-2)" font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="12">${t('s-room')}</text>`);
   const DY=deckY();
   o.push(`<line x1="${X(-1.6)}" y1="${Y(0)}" x2="${X(SMAX)}" y2="${Y(0)}" stroke="var(--ink-2)" stroke-width="0.8" stroke-dasharray="2 4"/>`);
   o.push(`<text x="${X(SMAX)}" y="${Y(0)-6}" text-anchor="end" fill="var(--muted)"
-    font-family="IBM Plex Sans Condensed" font-size="11">threshold</text>`);
+    font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="11">${t('s-threshold')}</text>`);
   o.push(`<line x1="${X(-1.6)}" y1="${Y(DY)}" x2="${X(SMAX)}" y2="${Y(DY)}" stroke="var(--deck)" stroke-width="0.8" stroke-dasharray="4 4"/>`);
   o.push(`<rect x="${X(0)}" y="${Y(DY)}" width="${X(st.depth)-X(0)}" height="5" fill="var(--deck)"/>`);
   o.push(`<text x="${X(st.depth/2)}" y="${Y(DY)-11}" text-anchor="middle" fill="var(--deck)"
-    font-family="IBM Plex Sans Condensed" font-size="12">deck floor${st.drop>0.005?' &mdash; '+f(st.drop)+' m below threshold':' &mdash; level with threshold'}</text>`);
+    font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="12">${t('s-deck')}${st.drop>0.005?t('s-below',f(st.drop)):t('s-level')}</text>`);
   if(st.drop>0.005){
     o.push(`<line x1="${X(-0.28)}" y1="${Y(0)}" x2="${X(-0.28)}" y2="${Y(DY)}" stroke="var(--rock)" stroke-width="1.4"/>`);
     [0,DY].forEach(v=>o.push(`<line x1="${X(-0.42)}" y1="${Y(v)}" x2="${X(-0.14)}" y2="${Y(v)}" stroke="var(--rock)" stroke-width="1.4"/>`));
@@ -783,41 +893,55 @@ function drawSect(){
     o.push(`<text x="${X(s)}" y="${Y(g)+15}" text-anchor="middle" fill="var(--ink)" font-family="IBM Plex Mono" font-size="11.5">${f(DY-g)}</text>`);
   }
   o.push(`<text x="${X(SMAX)}" y="${Y(2.2)}" text-anchor="end" fill="var(--muted)"
-    font-family="IBM Plex Sans Condensed" font-size="11">figures = drop from floor to ground, m</text>`);
+    font-family="IBM Plex Sans Condensed, IBM Plex Sans Thai" font-size="11">${t('s-figures')}</text>`);
   svg.innerHTML=o.join('');
 }
 
-/* clearance table */
-function drawTable(){
-  const ts=[-2.0,-1.5,-1.0,-0.5,0,0.5,1.0,1.5,2.0,2.5,3.0];
-  const step=st.depth/6;
-  const ss=[]; for(let i=1;i<=6;i++) ss.push(+(step*i).toFixed(2));
-  let h='<thead><tr><th>Out from wall</th>'+ts.map(t=>`<th>${t>0?'+':''}${t.toFixed(1)} m</th>`).join('')+'</tr></thead><tbody>';
-  ss.forEach(s=>{
-    h+=`<tr><td class="n">${f(s)} m</td>`;
-    ts.forEach(t=>{
-      const g=insideDeck(s,t)? groundM(s,t) : null;
-      h+=`<td class="n">${g===null?'<span style="color:var(--muted)">—</span>':f(deckY()-g)}</td>`;
-    });
-    h+='</tr>';
-  });
-  document.getElementById('clear').innerHTML=h+'</tbody>';
-}
 
-/* ---------- site photos ---------- */
-(function(){
-  const shots=GAL||[];
-  const rel=hd=>{
-    let a=st.outBearing-hd; while(a<-180)a+=360; while(a>180)a-=360;
-    if(Math.abs(a)<6) return 'straight out from the door';
-    return Math.abs(a).toFixed(0)+'\u00B0 to the '+(a>0?'left':'right');
-  };
-  document.getElementById('photos').innerHTML=shots.map(s=>
-    `<figure class="shot"><img src="${s.file}" alt="Site photo facing ${s.heading.toFixed(0)} degrees"
-      loading="lazy"><div class="cap">
-      <span class="hdg">${s.heading.toFixed(0)}&deg; true &middot; ${s.f35} mm &middot; ${rel(s.heading)}</span>
-      <span class="txt">${s.note}</span></div></figure>`).join('');
-})();
+/* ---------- deck board cost ---------- */
+const BAHT=v=>'\u0E3F\u2009'+Math.round(v).toLocaleString('en-US');   // hair space: the baht glyph is not monospaced
+function rowLength(s){ return Math.max(0, leftM(s)-rightM(s)); }
+function noReuseCount(widthM,boardLen){
+  /* every course cut from fresh stock, nothing carried into the next */
+  const pitch=widthM+0.006; let n=0;
+  for(let s=pitch/2; s<st.depth; s+=pitch){
+    const L=rowLength(s);
+    if(L>0.01) n+=Math.ceil(L/boardLen);
+  }
+  return n;
+}
+function drawCost(){
+  const waste=+document.getElementById('waste').value;
+  const a=area_(polygon());
+  const order=a*(1+waste/100);
+  document.getElementById('c-area').textContent=a.toFixed(2)+' m\u00B2';
+  document.getElementById('c-order').textContent=order.toFixed(2)+' m\u00B2';
+  document.getElementById('wastev').textContent=waste.toFixed(1);
+  const rows=COST.map(o=>{
+    const wM=o.w/100, cov=wM*o.len;
+    const boards=Math.ceil(order/cov);
+    const cost=boards*o.price;
+    return {...o, cov, boards, cost, perM2:cost/(boards*cov), noReuse:noReuseCount(wM,o.len)};
+  });
+  const cheapest=Math.min(...rows.map(r=>r.cost));
+  let out='<thead><tr>'+t('cols').map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const name=r.url?`<a href="${r.url}" target="_blank" rel="noopener">${r.name}</a>`:r.name;
+    out+=`<tr class="${r.highlight?'best':''}"><td>${name}</td>`
+      +`<td class="n">${r.w.toFixed(1)} \u00D7 ${(r.len*100).toFixed(0)} cm</td>`
+      +`<td class="n">${BAHT(r.price)}</td>`
+      +`<td class="n">${r.cov.toFixed(3)} m\u00B2</td>`
+      +`<td class="n">${r.boards}</td>`
+      +`<td class="n"><span class="sub2">${r.noReuse}</span></td>`
+      +`<td class="n">${BAHT(r.cost)}</td>`
+      +`<td class="n">${BAHT(r.perM2)}/m\u00B2</td>`
+      +`<td>${r.star?'<span class="badge">'+tf(r,'star')+'</span>':''}${tf(r,'note')}</td></tr>`;
+  });
+  document.getElementById('cost').innerHTML=out+'</tbody>';
+  const k=rows.find(r=>r.cost===cheapest);
+  document.getElementById('costfoot').innerHTML=t('costfoot',(k.len*100).toFixed(0),k.name,k.noReuse,k.boards);
+}
+document.getElementById('waste').addEventListener('input',drawCost);
 
 /* ---------- wiring ---------- */
 function rebuild(){ applyScale(); buildDeck(); buildRail(); buildEyeLevel(); applyVis(); refresh(); }
@@ -861,6 +985,7 @@ document.getElementById('bearing').addEventListener('input',e=>{
   if(horizon) horizon.rotation.y=THREE.MathUtils.degToRad(st.outBearing-HZ.out_bearing_default);
 });
 clampDepth();
+ready=true;
 rebuild(); frame();
 loadCloud();
 })();
