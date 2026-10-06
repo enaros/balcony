@@ -984,7 +984,33 @@ document.getElementById('bearing').addEventListener('input',e=>{
   document.getElementById('bearingv').textContent=st.outBearing;
   if(horizon) horizon.rotation.y=THREE.MathUtils.degToRad(st.outBearing-HZ.out_bearing_default);
 });
-clampDepth();
+/* ---------- slider settings in the url, so a configured deck can be shared ---------- */
+const PARAMS=['depth','rw','rf','drop','scale','waste','bearing'];
+const inp=id=>document.getElementById(id);
+function readParams(){
+  const q=new URLSearchParams(location.search);
+  PARAMS.forEach(id=>{
+    const v=q.get(id);
+    if(v!==null && v.trim()!=='' && isFinite(+v)) inp(id).value=v;   // range inputs clamp themselves
+  });
+  st.rw=+inp('rw').value; st.rf=+inp('rf').value; st.drop=+inp('drop').value;
+  const sc=+inp('scale').value; st.K=(sc>0.4&&sc<9)? sc/OPENING_UNITS : 1;
+  st.outBearing=+inp('bearing').value; inp('bearingv').textContent=st.outBearing;
+  st.depth=+inp('depth').value;
+  clampDepth();
+}
+/* only values moved off their defaults go in, so shared links stay short */
+function writeParams(){
+  const u=new URL(location.href);
+  PARAMS.forEach(id=>{
+    const el=inp(id);
+    if(+el.value===+el.defaultValue) u.searchParams.delete(id); else u.searchParams.set(id,el.value);
+  });
+  if(u.href!==location.href) history.replaceState(history.state,'',u);
+}
+PARAMS.forEach(id=>inp(id).addEventListener('input',writeParams));
+
+readParams();
 ready=true;
 rebuild(); frame();
 loadCloud();
