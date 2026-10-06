@@ -70,6 +70,8 @@ faster. If the web uploader drops it, nothing breaks.
 - **Shareable settings.** Moving a slider writes it to the URL — `depth`, `rw`, `rf`,
   `drop`, `scale`, `waste`, `bearing` — so a link opens the deck as configured,
   e.g. `?depth=3.5&rw=2&lang=th`. Values left at their default are omitted.
+  Orbiting or zooming the 3D view adds `view=azimuth,elevation,distance`
+  (degrees, degrees, metres), so the camera position is shared too.
 - **Light and dark** follow the visitor's OS setting. There is no in-page toggle.
 - All paths are relative, so the site works from a repository subpath without
   any configuration.

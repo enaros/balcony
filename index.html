@@ -728,9 +728,11 @@ canvas.addEventListener('pointermove',e=>{ if(!drag) return;
   orbit.az-=(e.clientX-drag.x)*0.007;
   orbit.el=Math.max(-0.15,Math.min(1.45, orbit.el+(e.clientY-drag.y)*0.006));
   drag={x:e.clientX,y:e.clientY};});
-['pointerup','pointercancel'].forEach(t=>canvas.addEventListener(t,()=>drag=null));
+['pointerup','pointercancel'].forEach(t=>canvas.addEventListener(t,()=>{ if(drag) writeParams(); drag=null; }));
+let wheelT=0;
 canvas.addEventListener('wheel',e=>{e.preventDefault();
-  orbit.r=Math.max(3.5,Math.min(26,orbit.r*(1+Math.sign(e.deltaY)*0.09)));},{passive:false});
+  orbit.r=Math.max(3.5,Math.min(26,orbit.r*(1+Math.sign(e.deltaY)*0.09)));
+  clearTimeout(wheelT); wheelT=setTimeout(writeParams,300);},{passive:false});
 
 /* ---------- readouts ---------- */
 const f=(v,d=2)=>(Math.abs(v)<5e-3?0:v).toFixed(d);   // no -0.00
@@ -998,7 +1000,18 @@ function readParams(){
   st.outBearing=+inp('bearing').value; inp('bearingv').textContent=st.outBearing;
   st.depth=+inp('depth').value;
   clampDepth();
+  const v=(q.get('view')||'').split(',').map(Number);   // camera: azimuth deg, elevation deg, distance m
+  if(v.length===3 && v.every(isFinite)){
+    orbit.az=THREE.MathUtils.degToRad(v[0]);
+    orbit.el=Math.max(-0.15,Math.min(1.45,THREE.MathUtils.degToRad(v[1])));
+    orbit.r=Math.max(3.5,Math.min(26,v[2]));
+  }
 }
+const viewStr=()=>{
+  const az=((THREE.MathUtils.radToDeg(orbit.az)%360)+360)%360;
+  return [az.toFixed(1),THREE.MathUtils.radToDeg(orbit.el).toFixed(1),orbit.r.toFixed(2)].map(Number).join(',');
+};
+const VIEW0=viewStr();
 /* only values moved off their defaults go in, so shared links stay short */
 function writeParams(){
   const u=new URL(location.href);
@@ -1006,7 +1019,10 @@ function writeParams(){
     const el=inp(id);
     if(+el.value===+el.defaultValue) u.searchParams.delete(id); else u.searchParams.set(id,el.value);
   });
-  if(u.href!==location.href) history.replaceState(history.state,'',u);
+  const v=viewStr();
+  if(v===VIEW0) u.searchParams.delete('view'); else u.searchParams.set('view',v);
+  const href=u.href.replace(/%2C/g,',');   // keep view=a,b,c readable
+  if(href!==location.href) history.replaceState(history.state,'',href);
 }
 PARAMS.forEach(id=>inp(id).addEventListener('input',writeParams));
 
