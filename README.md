@@ -27,7 +27,7 @@ photographic horizon placed by the compass headings in the photos' EXIF.
 ### From the command line instead
 
 ```bash
-cd /Users/e.onorati/balcony && git init -b main && git add -A && git commit -m "Balcony deck survey" && git remote add origin git@github.com:<user>/<repo>.git && git push -u origin main
+cd /Users/e.onorati/prototypes/balcony && git init -b main && git add -A && git commit -m "Balcony deck survey" && git remote add origin git@github.com:<user>/<repo>.git && git push -u origin main
 ```
 
 Then set Settings → Pages as in step 3.
@@ -45,24 +45,28 @@ faster. If the web uploader drops it, nothing breaks.
 |---|---|
 | `index.html` | The whole page: markup, styles, and all the geometry code |
 | `assets/scan.bin` | 187,639 splat points, quantised — position 3×uint16, colour 3×uint8 |
-| `assets/horizon.jpg` | The site photos reprojected into one 122° cylindrical panorama |
-| `assets/skirt.jpg` | Colour ramp that carries the panorama down to the ground |
-| `assets/photo-p*.jpg` | The five site photos, for the gallery |
+| `assets/horizon.jpg` | The site photos reprojected into one cylindrical panorama, 122° wide by 59° tall |
 | `data/scene.json` | Terrain heightmap on a 12.5 cm grid, plus the door geometry |
 | `data/levels.json` | Rock-face contour at 16 floor levels, for the height slider |
 | `data/horizon.json` | Panorama bearing and elevation extents |
 | `data/scan.json` | Point count and bounding box for dequantising `scan.bin` |
-| `data/photos.json` | Per-photo compass heading, focal length and caption |
+| `data/boards.json` | Decking options: board size, price and notes, for the cost table. `star_th` / `note_th` hold the Thai text |
+| `dev.py` | Local server with live reload, for working on the page (not needed on Pages) |
+| `renders/` | Photoreal views of the finished deck (not used by the page) |
 
 ## Notes
 
 - **Must be served over http.** The page `fetch`es its data, so opening
   `index.html` straight off disk will show a message telling you so. For a local
-  check: `python3 -m http.server` in this folder, then open
-  `http://localhost:8000/`.
+  check: `python3 dev.py` in this folder, then open `http://localhost:8000/`.
+  It reloads the page whenever a file changes. `dev.py` is only for local
+  work and does not need to be uploaded.
 - **Two external requests**: three.js r128 from cdnjs, and IBM Plex from Google
   Fonts. To make the site fully self-contained, download those and repoint the
   two `<link>`/`<script>` tags at the top of `index.html`.
+- **English and Thai.** The selector at the top right switches language in place;
+  `?lang=th` opens the page in Thai directly, so that link can be shared. English
+  text lives in the markup of `index.html`, Thai in the `TH` table in its script.
 - **Light and dark** follow the visitor's OS setting. There is no in-page toggle.
 - All paths are relative, so the site works from a repository subpath without
   any configuration.
