@@ -67,6 +67,9 @@ faster. If the web uploader drops it, nothing breaks.
 - **English and Thai.** The selector at the top right switches language in place;
   `?lang=th` opens the page in Thai directly, so that link can be shared. English
   text lives in the markup of `index.html`, Thai in the `TH` table in its script.
+- **Shareable settings.** Moving a slider writes it to the URL — `depth`, `rw`, `rf`,
+  `drop`, `scale`, `waste`, `bearing` — so a link opens the deck as configured,
+  e.g. `?depth=3.5&rw=2&lang=th`. Values left at their default are omitted.
 - **Light and dark** follow the visitor's OS setting. There is no in-page toggle.
 - All paths are relative, so the site works from a repository subpath without
   any configuration.
