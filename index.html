@@ -17,7 +17,13 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+  "@sparkjsdev/spark":"https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@2.3.1/dist/spark.module.js"
+}}
+</script>
 <style>
 :root{
   --paper:#EFEDE5; --surface:#F8F7F2; --sunken:#E4E1D6;
@@ -54,7 +60,7 @@ header{display:flex; flex-direction:column; gap:10px; border-bottom:1px solid va
   padding:4px 10px; color:var(--ink-2); text-decoration:none; background:var(--surface)}
 .lang a+a{border-left:1px solid var(--rule)}
 .lang a[aria-current="true"]{background:var(--deck); color:var(--paper)}
-html[lang="th"] :is(.eyebrow,.lab,.hint,.loading,.ctl label,.costbar label,figcaption,thead th,.badge){letter-spacing:0}
+html[lang="th"] :is(.eyebrow,.lab,.hint,.loading,.status,.ctl label,.costbar label,figcaption,thead th,.badge){letter-spacing:0}
 .eyebrow{font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:11.5px; font-weight:600;
   letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
 h1{margin:0; font-size:clamp(28px,4.4vw,42px); font-weight:600; letter-spacing:-.015em; line-height:1.08; text-wrap:balance}
@@ -85,6 +91,8 @@ header p{margin:0; max-width:63ch; color:var(--ink-2)}
   font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif; font-size:12px; letter-spacing:.1em;
   text-transform:uppercase; color:var(--muted); background:var(--sunken)}
 .loading[hidden]{display:none}
+.status{position:absolute; right:14px; bottom:12px; font-family:"IBM Plex Sans Condensed","IBM Plex Sans Thai",sans-serif;
+  font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
 
 .controls{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:22px 30px;
   padding:20px 22px; border:1px solid var(--rule); border-radius:3px; background:var(--surface)}
@@ -179,6 +187,7 @@ footer{border-top:1px solid var(--rule); padding-top:18px; color:var(--muted); f
   <canvas id="view"></canvas>
   <div class="hint" data-i18n="hint">Drag to orbit &middot; scroll to zoom</div>
   <div class="loading" id="loading" data-i18n="loading">Loading scan &hellip;</div>
+  <div class="status" id="status" hidden></div>
   <div class="legend">
     <span><i class="sw" style="background:var(--deck)"></i><span data-i18n="lg-deck">Deck floor</span></span>
     <span><i class="sw" style="background:var(--rock)"></i><span data-i18n="lg-rock">Rock line at floor level</span></span>
@@ -264,7 +273,9 @@ footer{border-top:1px solid var(--rule); padding-top:18px; color:var(--muted); f
 </footer>
 </div>
 
-<script>
+<script type="module">
+import * as THREE from "three";
+import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
 (async function(){
 "use strict";
 /* ---------- language: English lives in the markup, Thai here; ?lang=th selects it ---------- */
@@ -302,6 +313,8 @@ const TH={
   /* strings built in script */
   'err-data':'โหลดข้อมูลการสำรวจไม่ได้ ให้เปิดโฟลเดอร์นี้ผ่าน http แทนการเปิดไฟล์โดยตรง',
   'err-scan':'โหลดสแกนไม่ได้',
+  'splat-progress':v=>`กำลังโหลด Gaussian splat ${v}%`,
+  'err-splat':'โหลด Gaussian splat ไม่ได้ กำลังแสดงจุดสแกนแทน',
   tiles:['พื้นที่พื้น','ความลึกจากผนัง','ความกว้างที่ผนัง','ความกว้างที่ขอบหน้า','ขอบที่ต้องเก็บ',
          'ความสูงสูงสุดถึงพื้นดิน','วงกบถึงมุมขวา','หินถึงวงกบซ้าย','ขั้นลงที่ประตู','ความยาวราวกันตก'],
   'w-narrow':v=>`ที่ความลึกนี้ หินเข้ามาใกล้ขอบขวาเหลือเพียง ${v} m พื้นไม่มีที่พอ`,
@@ -324,6 +337,8 @@ const EN={
   'doc-title':document.title,
   'err-data':'Could not load the survey data. Serve this folder over http rather than opening the file directly.',
   'err-scan':'Scan could not be loaded',
+  'splat-progress':v=>`Loading Gaussian splat ${v}%`,
+  'err-splat':'Gaussian splat could not be loaded \u2014 showing scan points',
   tiles:['Floor area','Depth from wall','Width at the wall','Width at the front','Edge to trim',
          'Max drop to ground','Jamb to right corner','Rock to left jamb','Step down at door','Railing length'],
   'w-narrow':v=>`At this depth the rock has closed in to within ${v} m of the right edge — the floor runs out of room.`,
@@ -467,9 +482,9 @@ function place(){
     target.z - orbit.r*Math.cos(orbit.el)*Math.sin(orbit.az));
   camera.lookAt(target);
 }
-scene.add(new THREE.HemisphereLight(0xf3ead6,0x555038,0.62));
-const sun=new THREE.DirectionalLight(0xfff1da,0.62); sun.position.set(-5,6,-3.5); scene.add(sun);
-const fillLight=new THREE.DirectionalLight(0xcfe0ea,0.22); fillLight.position.set(4,3,5); scene.add(fillLight);
+scene.add(new THREE.HemisphereLight(0xf3ead6,0x555038,0.62*Math.PI));   // r155+ light units: x pi keeps the old look
+const sun=new THREE.DirectionalLight(0xfff1da,0.62*Math.PI); sun.position.set(-5,6,-3.5); scene.add(sun);
+const fillLight=new THREE.DirectionalLight(0xcfe0ea,0.22*Math.PI); fillLight.position.set(4,3,5); scene.add(fillLight);
 
 /* scan-unit content lives in a group scaled to metres */
 const world=new THREE.Group(); scene.add(world);
@@ -480,7 +495,7 @@ function css(v){ return getComputedStyle(document.documentElement).getPropertyVa
 /* ground mesh */
 const tGeo=new THREE.BufferGeometry();
 (function buildTerrain(){
-  const pos=[], col=[], idx=[], map=new Int32Array(NS*NT).fill(-1);
+  const pos=[], col=[], idx=[], map=new Int32Array(NS*NT).fill(-1), tc=new THREE.Color();
   let c=0;
   for(let j=0;j<NT;j++) for(let i=0;i<NS;i++){
     const h=D.terrain[j*NS+i]; if(h===null||h===undefined) continue;
@@ -488,7 +503,8 @@ const tGeo=new THREE.BufferGeometry();
     map[j*NS+i]=c++;
     pos.push(T0+j*CELL, h, S0+i*CELL);
     const u=Math.max(0,Math.min(1,(h+1.9)/2.6));
-    col.push(0.45+0.34*u, 0.42+0.30*u, 0.33+0.24*u);
+    tc.setRGB(0.45+0.34*u, 0.42+0.30*u, 0.33+0.24*u, THREE.SRGBColorSpace);   // vertex colours are linear
+    col.push(tc.r, tc.g, tc.b);
   }
   for(let j=0;j<NT-1;j++) for(let i=0;i<NS-1;i++){
     const a=map[j*NS+i], b=map[j*NS+i+1], d=map[(j+1)*NS+i], e=map[(j+1)*NS+i+1];
@@ -521,7 +537,8 @@ const doorGrp=new THREE.Group(); world.add(doorGrp);
 })();
 
 /* scan point cloud, decoded off the main paint */
-let cloud=null, eyeGrp=null, railGrp=null, horizon=null;
+let cloud=null, splat=null, eyeGrp=null, railGrp=null, horizon=null;
+const toLinear=c=>c<=0.04045? c/12.92 : Math.pow((c+0.055)/1.055,2.4);
 function decodePoints(bytes, meta, size, gain){
   const n=meta.n;
   const q=new Uint16Array(bytes.buffer,bytes.byteOffset,n*3);
@@ -529,7 +546,7 @@ function decodePoints(bytes, meta, size, gain){
   const lo=meta.lo, hi=meta.hi;
   for(let i=0;i<n;i++){
     for(let a=0;a<3;a++) pos[i*3+a]=lo[a]+q[i*3+a]/65535*(hi[a]-lo[a]);
-    for(let a=0;a<3;a++) col[i*3+a]=Math.min(1, bytes[n*6+i*3+a]/255*gain);
+    for(let a=0;a<3;a++) col[i*3+a]=toLinear(Math.min(1, bytes[n*6+i*3+a]/255*gain));
   }
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
@@ -551,6 +568,43 @@ async function loadCloud(){
   }catch(err){
     const el=document.getElementById('loading');
     el.dataset.i18n='err-scan'; el.innerHTML=t('err-scan');
+  }
+}
+/* the Gaussian splat itself. It stays in the capture's own frame; SPLAT_T is the
+   rigid transform from that frame to scan units (recovered by registering the
+   capture against scan.bin), so view-dependent colour needs no re-rotation.
+   scan.bin shows first as a quick preview while this larger file streams in. */
+const spark=new SparkRenderer({renderer});
+scene.add(spark);
+const SPLAT_T=new THREE.Matrix4().set(   // row-major
+  -0.947794, 0.022954, 0.318055, 2.311906,
+  -0.009636, -0.999012, 0.043382, 2.4e-05,
+  0.318737, 0.038053, 0.947079, 1.218415,
+  0, 0, 0, 1);
+async function loadSplat(){
+  const status=document.getElementById('status');
+  try{
+    const r=await fetch('assets/balcony.spz',{cache:'no-cache'});
+    if(!r.ok) throw new Error('balcony.spz -> '+r.status);
+    const total=+r.headers.get('content-length')||0, parts=[];
+    let got=0;
+    for(const rd=r.body.getReader();;){
+      const {done,value}=await rd.read(); if(done) break;
+      parts.push(value); got+=value.length;
+      if(total){ status.hidden=false; status.textContent=t('splat-progress',Math.round(got/total*100)); }
+    }
+    const bytes=new Uint8Array(got); let o=0;
+    for(const p of parts){ bytes.set(p,o); o+=p.length; }
+    const m=new SplatMesh({fileBytes:bytes, fileType:'spz'});
+    await m.initialized;
+    m.matrixAutoUpdate=false; m.matrix.copy(SPLAT_T);
+    world.add(m); splat=m;
+    document.getElementById('loading').hidden=true;
+    status.hidden=true;
+    applyVis();
+  }catch(err){
+    console.error(err);
+    status.textContent=t('err-splat');
   }
 }
 
@@ -642,6 +696,7 @@ function buildRail(){
 function texFromUrl(url){
   const tex=new THREE.TextureLoader().load(url);
   tex.wrapS=THREE.ClampToEdgeWrapping; tex.wrapT=THREE.ClampToEdgeWrapping;
+  tex.colorSpace=THREE.SRGBColorSpace;
   return tex;
 }
 /* a cylindrical strip between two elevations, u running across the panorama */
@@ -708,7 +763,8 @@ function buildHorizon(){
 }
 function applyVis(){
   terrain.visible=st.terrain; wallGrp.visible=st.wall;
-  if(cloud) cloud.visible=st.scan;
+  if(cloud) cloud.visible=st.scan && !splat;
+  if(splat) splat.visible=st.scan;
   if(eyeGrp) eyeGrp.visible=st.eye;
   if(railGrp) railGrp.visible=st.rail&&st.deck;
   if(horizon) horizon.visible=st.horizon;
@@ -1031,6 +1087,7 @@ readParams();
 ready=true;
 rebuild(); frame();
 loadCloud();
+loadSplat();
 })();
 </script>
 </body>
