@@ -1,7 +1,7 @@
 # Balcony Deck Survey
 
 A static site. Deck geometry measured from a Gaussian splat of the balcony:
-interactive 3D model, dimensioned plan, section, clearance table, and a
+interactive 3D model rendered as the Gaussian splat itself, dimensioned plan, section, clearance table, and a
 photographic horizon placed by the compass headings in the photos' EXIF.
 
 ## Publish on GitHub Pages
@@ -44,7 +44,8 @@ faster. If the web uploader drops it, nothing breaks.
 | Path | What it is |
 |---|---|
 | `index.html` | The whole page: markup, styles, and all the geometry code |
-| `assets/scan.bin` | 187,639 splat points, quantised — position 3×uint16, colour 3×uint8 |
+| `assets/balcony.spz` | The Gaussian splat, 693k splats with SH degree 1, in SPZ format (13 MB). Rendered with Spark |
+| `assets/scan.bin` | 187,639 splat centres, quantised — position 3×uint16, colour 3×uint8. Shown as a quick point-cloud preview while `balcony.spz` downloads |
 | `assets/horizon.jpg` | The site photos reprojected into one cylindrical panorama, 122° wide by 59° tall |
 | `data/scene.json` | Terrain heightmap on a 12.5 cm grid, plus the door geometry |
 | `data/levels.json` | Rock-face contour at 16 floor levels, for the height slider |
@@ -61,9 +62,16 @@ faster. If the web uploader drops it, nothing breaks.
   check: `python3 dev.py` in this folder, then open `http://localhost:8000/`.
   It reloads the page whenever a file changes. `dev.py` is only for local
   work and does not need to be uploaded.
-- **Two external requests**: three.js r128 from cdnjs, and IBM Plex from Google
-  Fonts. To make the site fully self-contained, download those and repoint the
-  two `<link>`/`<script>` tags at the top of `index.html`.
+- **External requests**: three.js 0.180 and Spark 2.3.1 (the splat renderer) from
+  jsDelivr, via the import map at the top of `index.html`, and IBM Plex from
+  Google Fonts. To make the site self-contained, download those and repoint the
+  import map and the font `<link>`.
+- **The splat** stays in the capture's own coordinate frame. `SPLAT_T` in
+  `index.html` is the rigid transform from that frame into the survey's scan
+  units; it was recovered by registering the original `balcony.ply` against
+  `scan.bin` (residual 0.06 mm). `balcony.spz` was made from that PLY, cropped to
+  20 units around the deck, with Spark's own SPZ encoder (`transcodeSpz`). The
+  177 MB PLY is not in the repository — GitHub refuses files over 100 MB.
 - **English and Thai.** The selector at the top right switches language in place;
   `?lang=th` opens the page in Thai directly, so that link can be shared. English
   text lives in the markup of `index.html`, Thai in the `TH` table in its script.
