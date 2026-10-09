@@ -44,7 +44,7 @@ faster. If the web uploader drops it, nothing breaks.
 | Path | What it is |
 |---|---|
 | `index.html` | The whole page: markup, styles, and all the geometry code |
-| `assets/balcony.spz` | The Gaussian splat, 614k splats with SH degree 1, in SPZ format (12 MB). Rendered with Spark |
+| `assets/balcony.spz` | The Gaussian splat, 595k splats with SH degree 1, in SPZ format (11 MB). Rendered with Spark |
 | `assets/scan.bin` | 187,639 splat centres, quantised — position 3×uint16, colour 3×uint8. Shown as a quick point-cloud preview while `balcony.spz` downloads |
 | `assets/horizon.jpg` | The site photos reprojected into one cylindrical panorama, 122° wide by 59° tall |
 | `data/scene.json` | Terrain heightmap on a 12.5 cm grid, plus the door geometry |
@@ -71,8 +71,10 @@ faster. If the web uploader drops it, nothing breaks.
   units; it was recovered by registering the original `balcony.ply` against
   `scan.bin` (residual 0.06 mm). `balcony.spz` was made from that PLY, cropped to
   5 units around the deck horizontally and 2.5 above the floor, with splats
-  larger than 0.1 units dropped (the blurry canopy and white floaters); inside the
-  house only a box through the doorway is kept (door leaves, curtain, chair), with Spark's own SPZ encoder (`transcodeSpz`). The
+  larger than 0.1 units dropped (the blurry canopy and white floaters); behind the
+  wall only the room floor by the door and the two curtains are kept; splats on
+  top of the doorframe and floaters below the soil (below the bottom of the dense
+  ground in their column) are removed, with Spark's own SPZ encoder (`transcodeSpz`). The
   177 MB PLY is not in the repository — GitHub refuses files over 100 MB.
 - **English and Thai.** The selector at the top right switches language in place;
   `?lang=th` opens the page in Thai directly, so that link can be shared. English
